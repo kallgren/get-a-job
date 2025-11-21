@@ -1,36 +1,144 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Job Tracker
+
+A modern job application tracking system built with Next.js, designed to help you manage your job search effectively.
+
+## Tech Stack
+
+- **Framework:** Next.js 16 (App Router)
+- **Language:** TypeScript
+- **Database:** PostgreSQL with Prisma ORM
+- **Authentication:** Clerk
+- **Styling:** Tailwind CSS v4 + shadcn/ui
+- **Testing:** Vitest + Playwright
+- **File Storage:** Uploadthing
+- **Container:** Docker (PostgreSQL)
+
+## Features
+
+- Track job applications through different stages (Wishlist → Applied → Interview → Offer → Accepted/Rejected)
+- Kanban board and table views
+- File uploads for resumes and cover letters
+- Application history tracking
+- Personal notes for each application
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 20+
+- Docker (for PostgreSQL)
+- npm
+
+### Installation
+
+1. Clone the repository and install dependencies:
+
+```bash
+npm install
+```
+
+2. Set up environment variables:
+
+```bash
+cp .env.example .env.local
+```
+
+Then edit `.env.local` and add your:
+
+- Clerk API keys (from https://clerk.com)
+- Uploadthing token (from https://uploadthing.com)
+
+3. Start PostgreSQL with Docker:
+
+```bash
+docker compose up -d
+```
+
+4. Set up the database:
+
+```bash
+npm run db:push
+npm run db:generate
+```
+
+5. Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to see your app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Available Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Development
 
-## Learn More
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
 
-To learn more about Next.js, take a look at the following resources:
+### Code Quality
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `npm run lint` - Run ESLint
+- `npm run lint:fix` - Fix ESLint errors
+- `npm run format` - Format code with Prettier
+- `npm run format:check` - Check code formatting
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Testing
 
-## Deploy on Vercel
+- `npm test` - Run unit/integration tests (Vitest)
+- `npm run test:ui` - Run tests with UI
+- `npm run test:coverage` - Generate test coverage report
+- `npm run test:e2e` - Run E2E tests (Playwright)
+- `npm run test:e2e:ui` - Run E2E tests with UI
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Database
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `npm run db:generate` - Generate Prisma client
+- `npm run db:push` - Push schema changes to database
+- `npm run db:migrate` - Create and run migrations
+- `npm run db:studio` - Open Prisma Studio (database GUI)
+
+## Project Structure
+
+```
+├── app/                # Next.js App Router pages
+├── components/         # React components
+│   └── ui/            # shadcn/ui components
+├── lib/               # Utility functions and configs
+│   └── prisma.ts      # Prisma client singleton
+├── prisma/            # Database schema and migrations
+│   └── schema.prisma  # Database models
+├── e2e/               # End-to-end tests
+├── public/            # Static assets
+└── docker-compose.yml # PostgreSQL configuration
+```
+
+## Database Schema
+
+### Job
+
+- Company name, job title, location
+- Application URL and job posting
+- Status tracking
+- Resume & cover letter uploads
+- Personal notes
+- Timestamps
+
+### JobHistory
+
+- Automatic audit trail for status changes
+- Field change tracking
+
+## Development Workflow
+
+1. Start Docker: `docker compose up -d`
+2. Run dev server: `npm run dev`
+3. Make changes
+4. Run tests: `npm test`
+5. Format code: `npm run format`
+6. Commit changes
+
+## License
+
+MIT

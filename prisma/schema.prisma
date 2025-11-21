@@ -1,0 +1,53 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum JobStatus {
+  WISHLIST
+  APPLIED
+  INTERVIEW
+  OFFER
+  ACCEPTED
+  REJECTED
+}
+
+model Job {
+  id              String      @id @default(cuid())
+  userId          String
+  company         String
+  jobTitle        String
+  location        String?
+  applicationUrl  String?
+  jobPostingText  String?     @db.Text
+  status          JobStatus   @default(WISHLIST)
+  personalNotes   String?     @db.Text
+  resumeUrl       String?
+  coverLetterUrl  String?
+  dateApplied     DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  history         JobHistory[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model JobHistory {
+  id          String   @id @default(cuid())
+  jobId       String
+  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  userId      String
+  fieldChanged String
+  oldValue    String?
+  newValue    String?
+  changedAt   DateTime @default(now())
+
+  @@index([jobId])
+}
