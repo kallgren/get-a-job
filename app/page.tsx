@@ -1,24 +1,37 @@
 import { UserButton } from "@clerk/nextjs";
-import { currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
+import { JobBoard } from "@/components/job-board";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { getJobsByUserIdSafe } from "@/lib/queries/jobs";
 
 export default async function Home() {
-  const user = await currentUser();
+  const { userId } = await auth();
+
+  const { data: jobs, error } = await getJobsByUserIdSafe(userId!);
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-destructive">
+          Failed to load jobs. Please try again later.
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-      <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
+    <div className="flex min-h-screen flex-col bg-background">
+      <header className="border-b border-border bg-card shadow-sm">
+        <div className="flex h-16 items-center justify-between px-4">
           <h1 className="text-xl font-semibold">Job Tracker</h1>
-          <UserButton />
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <UserButton />
+          </div>
         </div>
       </header>
-      <main className="mx-auto max-w-7xl px-4 py-8">
-        <p className="text-zinc-600 dark:text-zinc-400">
-          Welcome, {user?.firstName || user?.emailAddresses[0]?.emailAddress}!
-        </p>
-        <p className="mt-4 text-zinc-500">
-          Job board and table views coming soon...
-        </p>
+      <main className="flex flex-1 flex-col pt-6">
+        <JobBoard jobs={jobs || []} />
       </main>
     </div>
   );

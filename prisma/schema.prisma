@@ -19,20 +19,27 @@ enum JobStatus {
 }
 
 model Job {
-  id              String      @id @default(cuid())
+  id              Int         @id @default(autoincrement())
   userId          String
+
   company         String
-  jobTitle        String
+  title           String?
   location        String?
-  applicationUrl  String?
-  jobPostingText  String?     @db.Text
   status          JobStatus   @default(WISHLIST)
-  personalNotes   String?     @db.Text
+  order           String      @default("0")
+
+  dateApplied     DateTime?
+  jobPostingUrl   String?
+  jobPostingText  String?     @db.Text
+  notes           String?     @db.Text
   resumeUrl       String?
   coverLetterUrl  String?
-  dateApplied     DateTime?
+  contactPerson   String?
+  
+  deletedAt       DateTime?
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
+  
   history         JobHistory[]
 
   @@index([userId])
@@ -40,8 +47,8 @@ model Job {
 }
 
 model JobHistory {
-  id          String   @id @default(cuid())
-  jobId       String
+  id          Int      @id @default(autoincrement())
+  jobId       Int
   job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
   userId      String
   fieldChanged String

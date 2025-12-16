@@ -3,18 +3,21 @@ CREATE TYPE "JobStatus" AS ENUM ('WISHLIST', 'APPLIED', 'INTERVIEW', 'OFFER', 'A
 
 -- CreateTable
 CREATE TABLE "Job" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "userId" TEXT NOT NULL,
     "company" TEXT NOT NULL,
-    "jobTitle" TEXT NOT NULL,
+    "title" TEXT,
     "location" TEXT,
-    "applicationUrl" TEXT,
-    "jobPostingText" TEXT,
     "status" "JobStatus" NOT NULL DEFAULT 'WISHLIST',
-    "personalNotes" TEXT,
+    "order" TEXT NOT NULL DEFAULT '0',
+    "dateApplied" TIMESTAMP(3),
+    "jobPostingUrl" TEXT,
+    "jobPostingText" TEXT,
+    "notes" TEXT,
     "resumeUrl" TEXT,
     "coverLetterUrl" TEXT,
-    "dateApplied" TIMESTAMP(3),
+    "contactPerson" TEXT,
+    "deletedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -23,8 +26,8 @@ CREATE TABLE "Job" (
 
 -- CreateTable
 CREATE TABLE "JobHistory" (
-    "id" TEXT NOT NULL,
-    "jobId" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
+    "jobId" INTEGER NOT NULL,
     "userId" TEXT NOT NULL,
     "fieldChanged" TEXT NOT NULL,
     "oldValue" TEXT,

@@ -8,15 +8,18 @@ A modern job application tracking system built with Next.js, designed to help yo
 - **Language:** TypeScript
 - **Database:** PostgreSQL with Prisma ORM
 - **Authentication:** Clerk
-- **Styling:** Tailwind CSS v4 + shadcn/ui
+- **Styling:** Tailwind CSS v4 + shadcn/ui (CSS variables)
+- **Theme:** next-themes (dark mode support)
 - **Testing:** Vitest + Playwright
-- **File Storage:** Uploadthing
+- **File Storage:** Uploadthing (TODO)
 - **Container:** Docker (PostgreSQL)
+- **Drag and drop:** dnd-kit
 
 ## Features
 
 - Track job applications through different stages (Wishlist → Applied → Interview → Offer → Accepted/Rejected)
 - Kanban board and table views
+- Dark mode support with system preference detection
 - File uploads for resumes and cover letters
 - Application history tracking
 - Personal notes for each application
@@ -92,6 +95,39 @@ Open [http://localhost:3000](http://localhost:3000) to see your app.
 - `npm run test:e2e` - Run E2E tests (Playwright)
 - `npm run test:e2e:ui` - Run E2E tests with UI
 
+#### E2E Test Setup
+
+E2E tests require a test user in Clerk and specific environment variables:
+
+1. **Create a test user in Clerk Dashboard:**
+   - Go to https://dashboard.clerk.com
+   - Navigate to Users → Create User
+   - Enable "Email address" and "Password" authentication
+   - Create a user with email ending in `+clerk_test` (e.g., `yourname+clerk_test@example.com`)
+   - Copy the User ID (starts with `user_`)
+
+2. **Add to `.env.local`:**
+   ```bash
+   TEST_USER_EMAIL=yourname+clerk_test@example.com
+   TEST_USER_PASSWORD=your_test_password
+   TEST_USER_ID=user_xxxxxxxxxxxxxxxxxxxxx
+   ```
+
+3. **Run tests:**
+   ```bash
+   npm run test:e2e
+   ```
+
+**How it works:**
+- First run: Playwright authenticates once and saves session to `playwright/.auth/user.json`
+- Subsequent runs: Tests reuse saved auth state (much faster!)
+- Each test: Database is cleaned before running to ensure isolation
+
+**Troubleshooting:**
+- If tests fail with auth errors, delete `playwright/.auth/user.json` and re-run
+- Auth state expires after some time - regenerate by re-running tests
+- Tests automatically run setup before chromium tests (no manual setup needed)
+
 ### Database
 
 - `npm run db:generate` - Generate Prisma client
@@ -107,6 +143,7 @@ Open [http://localhost:3000](http://localhost:3000) to see your app.
 │   └── ui/            # shadcn/ui components
 ├── lib/               # Utility functions and configs
 │   └── prisma.ts      # Prisma client singleton
+│   └── queries/       # Data access layer (database operations)
 ├── prisma/            # Database schema and migrations
 │   └── schema.prisma  # Database models
 ├── e2e/               # End-to-end tests
@@ -118,17 +155,23 @@ Open [http://localhost:3000](http://localhost:3000) to see your app.
 
 ### Job
 
-- Company name, job title, location
-- Application URL and job posting
-- Status tracking
-- Resume & cover letter uploads
-- Personal notes
-- Timestamps
+- **ID:** Integer (autoincrement)
+- **Core fields:** Company (required), title (optional), location
+- **Application:** Job posting URL, job posting text, date applied
+- **Status:** Enum (WISHLIST → APPLIED → INTERVIEW → OFFER → ACCEPTED/REJECTED)
+- **Files:** Resume & cover letter URLs (Uploadthing)
+- **Notes:** Personal notes field, contact person
+- **Soft delete:** deletedAt timestamp (deleted jobs remain in database)
+- **Ordering:** Order field for drag-drop positioning (future feature)
+- **Timestamps:** createdAt, updatedAt
+- **Multi-tenancy:** userId field
 
 ### JobHistory
 
-- Automatic audit trail for status changes
-- Field change tracking
+- **ID:** Integer (autoincrement)
+- **Tracking:** jobId (foreign key), fieldChanged, oldValue, newValue
+- **Timestamp:** changedAt
+- **Cascade delete:** Removed when parent Job is hard-deleted
 
 ## Development Workflow
 

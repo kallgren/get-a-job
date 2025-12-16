@@ -13,8 +13,21 @@ export default defineConfig({
   },
   projects: [
     {
+      name: "setup",
+      testMatch: /global\.setup\.ts/,
+      teardown: "teardown",
+    },
+    {
+      name: "teardown",
+      testMatch: /global\.teardown\.ts/,
+    },
+    {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: "playwright/.auth/user.json",
+      },
+      dependencies: ["setup"],
     },
   ],
   webServer: {
