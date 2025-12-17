@@ -8,7 +8,6 @@ import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -208,103 +207,116 @@ export function JobModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isEditing ? "Edit Job" : "Add New Job"}</DialogTitle>
-          <DialogDescription>
-            {isEditing
-              ? "Update the details for this job application."
-              : "Add a new job application to track."}
-          </DialogDescription>
+          <DialogTitle>{isEditing ? "Edit Job" : "New Job"}</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* Company */}
-            <FormField
-              control={form.control}
-              name="company"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Company *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Acme Inc." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Title */}
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Senior Developer" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Location */}
-            <FormField
-              control={form.control}
-              name="location"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Location</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Stockholm, Sweden" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Contact Person */}
-            <FormField
-              control={form.control}
-              name="contactPerson"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Contact Person</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Jane Doe" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Status */}
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Status *</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+            {/* Row 1: Company, Title */}
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="company"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Company *</FormLabel>
                     <FormControl>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
+                      <Input placeholder="Acme Inc." {...field} />
                     </FormControl>
-                    <SelectContent>
-                      {JOB_STATUSES.map((status) => (
-                        <SelectItem key={status.value} value={status.value}>
-                          {status.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            {/* Job Posting URL */}
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Senior Developer" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Row 2: Location, Contact Person */}
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Location</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Stockholm, Sweden" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="contactPerson"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Contact Person</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Jane Doe" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Row 3: Status, Date Applied */}
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Status *</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {JOB_STATUSES.map((status) => (
+                          <SelectItem key={status.value} value={status.value}>
+                            {status.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="dateApplied"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Date Applied</FormLabel>
+                    <FormControl>
+                      <Input type="datetime-local" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Row 4: Job Posting URL (full width) */}
             <FormField
               control={form.control}
               name="jobPostingUrl"
@@ -323,41 +335,7 @@ export function JobModal({
               )}
             />
 
-            {/* Date Applied */}
-            <FormField
-              control={form.control}
-              name="dateApplied"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Date Applied</FormLabel>
-                  <FormControl>
-                    <Input type="datetime-local" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Job Posting Text */}
-            <FormField
-              control={form.control}
-              name="jobPostingText"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Job Posting Text</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Paste the full job posting here..."
-                      className="min-h-[100px]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Notes */}
+            {/* Row 5: Notes (full width) */}
             <FormField
               control={form.control}
               name="notes"
@@ -376,17 +354,17 @@ export function JobModal({
               )}
             />
 
-            {/* Resume URL */}
+            {/* Row 6: Job Posting Text (full width) */}
             <FormField
               control={form.control}
-              name="resumeUrl"
+              name="jobPostingText"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Resume URL</FormLabel>
+                  <FormLabel>Job Posting Text</FormLabel>
                   <FormControl>
-                    <Input
-                      type="url"
-                      placeholder="https://drive.google.com/..."
+                    <Textarea
+                      placeholder="Paste the full job posting here..."
+                      className="min-h-[100px]"
                       {...field}
                     />
                   </FormControl>
@@ -395,24 +373,44 @@ export function JobModal({
               )}
             />
 
-            {/* Cover Letter URL */}
-            <FormField
-              control={form.control}
-              name="coverLetterUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Cover Letter URL</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="url"
-                      placeholder="https://drive.google.com/..."
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* Row 7: Resume URL, Cover Letter URL */}
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="resumeUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Resume URL</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="url"
+                        placeholder="https://drive.google.com/..."
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="coverLetterUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cover Letter URL</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="url"
+                        placeholder="https://drive.google.com/..."
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             {error && (
               <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
