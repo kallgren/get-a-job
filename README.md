@@ -1,4 +1,4 @@
-# Job Tracker
+# Get a Job
 
 A modern job application tracking system built with Next.js, designed to help you manage your job search effectively.
 

@@ -69,7 +69,7 @@ describe("Home Page", () => {
     expect(
       screen.queryByText("Failed to load jobs. Please try again later.")
     ).not.toBeInTheDocument();
-    expect(screen.getByText("Job Tracker")).toBeInTheDocument();
+    expect(screen.getByText("Get a Job")).toBeInTheDocument();
     expect(screen.getByTestId("job-board")).toBeInTheDocument();
     expect(screen.getByTestId("theme-toggle")).toBeInTheDocument();
     expect(screen.getByTestId("user-button")).toBeInTheDocument();

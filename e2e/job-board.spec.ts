@@ -10,7 +10,7 @@ test.describe("Job Board", () => {
     await page.goto("/");
 
     // Wait for page to load
-    await page.waitForSelector('h1:has-text("Job Tracker")');
+    await page.waitForSelector('h1:has-text("Get a Job")');
   });
 
   test("should display the job board with status columns", async ({ page }) => {

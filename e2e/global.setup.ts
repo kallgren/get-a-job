@@ -34,7 +34,7 @@ setup("authenticate", async ({ page }) => {
   await page.getByLabel("Enter verification code").pressSequentially("424242");
 
   // Wait for auth completion
-  await page.waitForSelector('h1:has-text("Job Tracker")');
+  await page.waitForSelector('h1:has-text("Get a Job")');
 
   // Save authenticated state to file for reuse
   await page.context().storageState({ path: authFile });
