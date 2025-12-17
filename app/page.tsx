@@ -30,7 +30,7 @@ export default async function Home() {
           </div>
         </div>
       </header>
-      <main className="flex flex-1 flex-col pt-6">
+      <main className="flex flex-1 flex-col pt-2">
         <JobBoard jobs={jobs || []} />
       </main>
     </div>
