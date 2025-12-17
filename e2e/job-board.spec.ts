@@ -42,9 +42,7 @@ test.describe("Job Board", () => {
 
     // Verify modal opens
     await expect(page.getByRole("dialog")).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "Add New Job" })
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "New Job" })).toBeVisible();
 
     // Fill in the form
     await page.getByLabel(/company/i).fill("Acme Corp");
@@ -84,9 +82,7 @@ test.describe("Job Board", () => {
 
     // Verify modal opens
     await expect(page.getByRole("dialog")).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "Add New Job" })
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "New Job" })).toBeVisible();
 
     // Fill in the form
     await page.getByLabel(/company/i).fill(uniqueCompany);
