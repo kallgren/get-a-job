@@ -1,8 +1,25 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { JobStatus } from "@prisma/client";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
+}
+
+/**
+ * Get the Tailwind color class for a job status
+ * Used for status indicators (dots, borders, etc.)
+ */
+export function getStatusColor(status: JobStatus): string {
+  const colorMap: Record<JobStatus, string> = {
+    WISHLIST: "status-wishlist",
+    APPLIED: "status-applied",
+    INTERVIEW: "status-interview",
+    OFFER: "status-offer",
+    ACCEPTED: "status-accepted",
+    REJECTED: "status-rejected",
+  };
+  return colorMap[status];
 }
 
 /**

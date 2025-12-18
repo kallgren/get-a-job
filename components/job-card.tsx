@@ -2,6 +2,7 @@
 
 import { Job } from "@prisma/client";
 import { useDraggable } from "@dnd-kit/core";
+import { getStatusColor } from "@/lib/utils";
 
 interface JobCardProps {
   job: Job;
@@ -28,7 +29,7 @@ export function JobCard({ job, onClick }: JobCardProps) {
     <div
       ref={setNodeRef}
       style={style}
-      className="cursor-grab rounded-md border border-border bg-card p-4 shadow-sm hover:shadow-md active:cursor-grabbing"
+      className={`relative cursor-grab rounded-md border border-border bg-card p-4 shadow-sm hover:shadow-md active:cursor-grabbing overflow-hidden`}
       {...attributes}
       {...listeners}
       onClick={handleClick}
@@ -39,6 +40,13 @@ export function JobCard({ job, onClick }: JobCardProps) {
         }
       }}
     >
+      {/* Status color stripe */}
+      <div
+        className={`absolute left-0 top-0 bottom-0 w-1 bg-${getStatusColor(
+          job.status
+        )}`}
+        aria-hidden="true"
+      />
       <h3 className="font-medium text-card-foreground">{job.company}</h3>
       <p className="text-sm text-card-foreground">{job.title}</p>
       {job.location && (

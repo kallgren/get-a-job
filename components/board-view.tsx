@@ -5,6 +5,7 @@ import { useDroppable } from "@dnd-kit/core";
 import { JobCard } from "@/components/job-card";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
+import { getStatusColor } from "@/lib/utils";
 
 const JOB_STATUSES: { value: JobStatus; label: string }[] = [
   { value: "WISHLIST", label: "Wishlist" },
@@ -46,6 +47,10 @@ function DroppableColumn({
     >
       <div className="flex items-center justify-between gap-2 p-4">
         <div className="flex items-center gap-2">
+          <span
+            className={`size-2.5 rounded-full bg-${getStatusColor(status.value)}`}
+            aria-hidden="true"
+          />
           <h2 className="font-semibold text-card-foreground">{status.label}</h2>
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground">
             {jobs.length}
