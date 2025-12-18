@@ -2,6 +2,7 @@
 
 import { Job } from "@prisma/client";
 import { useDraggable } from "@dnd-kit/core";
+import { AlignLeft } from "lucide-react";
 import { getStatusColor } from "@/lib/utils";
 
 interface JobCardProps {
@@ -29,7 +30,7 @@ export function JobCard({ job, onClick }: JobCardProps) {
     <div
       ref={setNodeRef}
       style={style}
-      className={`relative cursor-grab rounded-md border border-border bg-card p-4 shadow-sm hover:shadow-md active:cursor-grabbing overflow-hidden`}
+      className={`relative cursor-grab rounded-md border border-border bg-card p-4 shadow-sm hover:shadow-md active:cursor-grabbing`}
       {...attributes}
       {...listeners}
       onClick={handleClick}
@@ -56,6 +57,15 @@ export function JobCard({ job, onClick }: JobCardProps) {
         <p className="mt-2 text-xs text-muted-foreground">
           Applied: {new Date(job.dateApplied).toLocaleDateString()}
         </p>
+      )}
+      {/* Notes indicator bubble */}
+      {job.notes && job.notes.trim() && (
+        <div
+          className="absolute -right-2 bottom-4 flex items-center justify-center rounded-full bg-card border border-border size-9 shadow-md"
+          aria-label="Has notes"
+        >
+          <AlignLeft className="size-4 text-card-foreground" />
+        </div>
       )}
     </div>
   );

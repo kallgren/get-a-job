@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Job, JobStatus } from "@prisma/client";
 import { useRouter } from "next/navigation";
+import { AlignLeft } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -341,7 +342,10 @@ export function JobModal({
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notes</FormLabel>
+                  <FormLabel className="flex items-center gap-1.5">
+                    Notes
+                    <AlignLeft className="size-4" aria-hidden="true" />
+                  </FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="Notes about the company, interview prep, etc."
