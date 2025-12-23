@@ -3,9 +3,17 @@
 import { Moon, Sun, Monitor } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // useEffect only runs on the client, so now we can safely show the UI
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Recommended pattern by next-themes for preventing hydration mismatch
+    setMounted(true);
+  }, []);
 
   const cycleTheme = () => {
     if (theme === "light") setTheme("dark");
@@ -29,6 +37,15 @@ export function ThemeToggle() {
       themeNames[theme as keyof typeof themeNames] || "System";
     return `Current theme: ${currentTheme}. Click to cycle themes.`;
   };
+
+  // Return a placeholder button during SSR to prevent hydration mismatch
+  if (!mounted) {
+    return (
+      <Button variant="ghost" size="icon" aria-label="Toggle theme">
+        <Monitor className="h-4 w-4" />
+      </Button>
+    );
+  }
 
   return (
     <Button
