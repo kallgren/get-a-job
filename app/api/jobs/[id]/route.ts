@@ -33,16 +33,21 @@ export async function PATCH(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Update the job - convert empty strings/undefined to null for Prisma
-    const job = await updateJob(
-      id,
-      toNullable({
-        ...validated,
-        dateApplied: validated.dateApplied
-          ? new Date(validated.dateApplied)
-          : undefined,
-      })
-    );
+    // Build update data - only include fields that were provided
+    const updateData: Record<string, unknown> = { ...validated };
+
+    // Only process dateApplied if it was explicitly provided (not undefined)
+    if (validated.dateApplied !== undefined) {
+      updateData.dateApplied = validated.dateApplied
+        ? new Date(validated.dateApplied)
+        : null;
+    } else {
+      // Remove dateApplied from update if not provided (preserves existing value)
+      delete updateData.dateApplied;
+    }
+
+    // Update the job - convert empty strings to null for Prisma
+    const job = await updateJob(id, toNullable(updateData));
 
     return NextResponse.json(job);
   } catch (error) {

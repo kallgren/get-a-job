@@ -163,11 +163,13 @@ test.describe("Job Board", () => {
   }) => {
     // Use unique company name to avoid conflicts with parallel tests
     const uniqueCompany = `Drag Test ${Date.now()}`;
+    const testDate = "2025-12-20";
 
-    // First, create a job in Wishlist
+    // First, create a job in Wishlist with a date
     await page.getByRole("button", { name: "Add job to Wishlist" }).click();
     await page.getByLabel(/company/i).fill(uniqueCompany);
     await page.getByLabel(/title/i).fill("Test Role");
+    await page.getByLabel(/date applied/i).fill(testDate);
 
     // Open status combobox and select Wishlist
     await page.getByLabel(/status/i).click();
@@ -220,6 +222,12 @@ test.describe("Job Board", () => {
     await expect(
       wishlistAfter.getByText(uniqueCompany, { exact: true })
     ).not.toBeVisible();
+
+    // Verify the date was preserved after drag and drop
+    await page.getByText(uniqueCompany).click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+    await expect(page.getByLabel(/date applied/i)).toHaveValue(testDate);
+    await page.getByRole("button", { name: /cancel/i }).click();
   });
 
   test("should delete a job", async ({ page }) => {
