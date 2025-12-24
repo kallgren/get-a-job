@@ -43,9 +43,7 @@ export function JobCard({ job, onClick }: JobCardProps) {
     >
       {/* Status color stripe */}
       <div
-        className={`absolute left-0 top-0 bottom-0 w-1 bg-${getStatusColor(
-          job.status
-        )}`}
+        className={`absolute left-0 top-0 bottom-0 w-1 ${getStatusColor(job.status)}`}
         aria-hidden="true"
       />
       <h3 className="font-medium text-card-foreground">{job.company}</h3>

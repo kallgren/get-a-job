@@ -7,17 +7,17 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
- * Get the Tailwind color class for a job status
- * Used for status indicators (dots, borders, etc.)
+ * Get the complete Tailwind background color class for a job status
+ * Returns complete class names so Tailwind's JIT compiler can detect them
  */
 export function getStatusColor(status: JobStatus): string {
   const colorMap: Record<JobStatus, string> = {
-    WISHLIST: "status-wishlist",
-    APPLIED: "status-applied",
-    INTERVIEW: "status-interview",
-    OFFER: "status-offer",
-    ACCEPTED: "status-accepted",
-    REJECTED: "status-rejected",
+    WISHLIST: "bg-status-wishlist",
+    APPLIED: "bg-status-applied",
+    INTERVIEW: "bg-status-interview",
+    OFFER: "bg-status-offer",
+    ACCEPTED: "bg-status-accepted",
+    REJECTED: "bg-status-rejected",
   };
   return colorMap[status];
 }

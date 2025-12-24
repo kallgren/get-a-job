@@ -48,7 +48,7 @@ function DroppableColumn({
       <div className="flex items-center justify-between gap-2 p-4">
         <div className="flex items-center gap-2">
           <span
-            className={`size-2.5 rounded-full bg-${getStatusColor(status.value)}`}
+            className={`size-2.5 rounded-full ${getStatusColor(status.value)}`}
             aria-hidden="true"
           />
           <h2 className="font-semibold text-card-foreground">{status.label}</h2>
