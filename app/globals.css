@@ -43,6 +43,8 @@
   --color-status-offer: var(--status-offer);
   --color-status-accepted: var(--status-accepted);
   --color-status-rejected: var(--status-rejected);
+  --color-brand-blue: var(--brand-blue);
+  --color-brand-blue-foreground: var(--brand-blue-foreground);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -89,6 +91,9 @@
   --status-offer: oklch(0.65 0.15 145);
   --status-accepted: oklch(0.65 0.15 145);
   --status-rejected: oklch(0.6 0.2 25);
+  /* Brand color */
+  --brand-blue: oklch(0.55 0.18 240);
+  --brand-blue-foreground: oklch(1 0 0);
 }
 
 .dark {
@@ -130,6 +135,9 @@
   --status-offer: oklch(0.7 0.18 145);
   --status-accepted: oklch(0.7 0.18 145);
   --status-rejected: oklch(0.7 0.22 25);
+  /* Brand color */
+  --brand-blue: oklch(0.65 0.2 240);
+  --brand-blue-foreground: oklch(1 0 0);
 }
 
 @layer base {
