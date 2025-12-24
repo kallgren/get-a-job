@@ -49,6 +49,7 @@ test.describe("Job Board", () => {
     await page.getByLabel(/title/i).fill("Senior Developer");
     await page.getByLabel(/location/i).fill("Stockholm");
     await page.getByLabel(/job posting url/i).fill("https://jobs.acme.com/123");
+    await page.getByLabel(/date applied/i).fill("2025-12-15");
 
     // Open status combobox and select option
     await page.getByLabel(/status/i).click();
@@ -69,6 +70,12 @@ test.describe("Job Board", () => {
       wishlistColumn.getByText("Acme Corp", { exact: true })
     ).toBeVisible();
     await expect(wishlistColumn.getByText("Senior Developer")).toBeVisible();
+
+    // Reopen the job and verify the date was saved correctly
+    await page.getByText("Acme Corp").click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+    await expect(page.getByLabel(/date applied/i)).toHaveValue("2025-12-15");
+    await page.getByRole("button", { name: /cancel/i }).click();
   });
 
   test("should create a job in specific column using column add button", async ({

@@ -51,17 +51,13 @@ interface JobModalProps {
   initialStatus?: JobStatus;
 }
 
-// Convert ISO datetime to datetime-local format (YYYY-MM-DDTHH:mm)
-function isoToDatetimeLocal(iso: string | null | undefined): string {
+// Convert ISO datetime string or Date to date-only format (YYYY-MM-DD)
+// Handles both cases since dates can be Date objects or strings depending on the data source
+function isoToDate(iso: string | Date | null | undefined): string {
   if (!iso) return "";
-  return iso.slice(0, 16); // "2024-11-26T14:30:00.000Z" -> "2024-11-26T14:30"
-}
-
-// Convert datetime-local format to ISO datetime
-function datetimeLocalToIso(datetime: string | undefined): string | undefined {
-  if (!datetime) return undefined;
-  // datetime-local gives "YYYY-MM-DDTHH:mm", convert to full ISO
-  return new Date(datetime).toISOString();
+  // Handle Date objects (from some code paths) and strings (from serialization)
+  const isoString = iso instanceof Date ? iso.toISOString() : iso;
+  return isoString.slice(0, 10); // "2024-11-26T14:30:00.000Z" -> "2024-11-26"
 }
 
 export function JobModal({
@@ -110,9 +106,7 @@ export function JobModal({
           contactPerson: job.contactPerson ?? "",
           resumeUrl: job.resumeUrl ?? "",
           coverLetterUrl: job.coverLetterUrl ?? "",
-          dateApplied: job.dateApplied
-            ? isoToDatetimeLocal(job.dateApplied.toISOString())
-            : "",
+          dateApplied: isoToDate(job.dateApplied),
         });
       } else {
         form.reset({
@@ -138,11 +132,8 @@ export function JobModal({
     setError(null);
 
     try {
-      // Convert datetime-local to ISO before sending
-      const payload = {
-        ...data,
-        dateApplied: datetimeLocalToIso(data.dateApplied),
-      };
+      // dateApplied is already in YYYY-MM-DD format from the date input
+      const payload = data;
 
       const url = isEditing ? `/api/jobs/${job.id}` : "/api/jobs";
       const method = isEditing ? "PATCH" : "POST";
@@ -309,7 +300,7 @@ export function JobModal({
                   <FormItem>
                     <FormLabel>Date Applied</FormLabel>
                     <FormControl>
-                      <Input type="datetime-local" {...field} />
+                      <Input type="date" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

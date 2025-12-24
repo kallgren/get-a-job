@@ -16,7 +16,7 @@ export const jobSchema = z.object({
     .url({ message: "Invalid URL" })
     .or(z.literal(""))
     .optional(),
-  dateApplied: z.iso.datetime().or(z.literal("")).optional(),
+  dateApplied: z.iso.date().or(z.literal("")).optional(),
   order: z.string().default("0"),
 });
 
