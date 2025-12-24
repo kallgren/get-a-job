@@ -41,3 +41,26 @@ export function toNullable<T extends Record<string, any>>(obj: T): any {
   }
   return result;
 }
+
+/**
+ * Format a date as D/M YYYY, omitting the year if it's the current year
+ * No leading zeros for a more compact display
+ *
+ * Examples:
+ * - Date in current year: "1/12"
+ * - Date in different year: "1/12 2024"
+ */
+export function formatJobDate(date: Date | string): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  const currentYear = new Date().getFullYear();
+  const dateYear = d.getFullYear();
+
+  const day = d.getDate();
+  const month = d.getMonth() + 1;
+
+  if (dateYear === currentYear) {
+    return `${day}/${month}`;
+  }
+
+  return `${day}/${month} ${dateYear}`;
+}

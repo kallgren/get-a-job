@@ -3,7 +3,7 @@
 import { Job } from "@prisma/client";
 import { useDraggable } from "@dnd-kit/core";
 import { AlignLeft } from "lucide-react";
-import { getStatusColor } from "@/lib/utils";
+import { getStatusColor, formatJobDate } from "@/lib/utils";
 
 interface JobCardProps {
   job: Job;
@@ -53,7 +53,7 @@ export function JobCard({ job, onClick }: JobCardProps) {
       )}
       {job.dateApplied && (
         <p className="mt-2 text-xs text-muted-foreground">
-          Applied: {new Date(job.dateApplied).toLocaleDateString()}
+          Applied: {formatJobDate(job.dateApplied)}
         </p>
       )}
       {/* Notes indicator bubble */}
