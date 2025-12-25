@@ -125,7 +125,8 @@ export function JobModal({
       }
       setError(null);
     }
-  }, [open, job, form, initialStatus]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, job, initialStatus]);
 
   async function onSubmit(data: JobFormData) {
     setIsSubmitting(true);
