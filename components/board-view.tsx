@@ -41,7 +41,7 @@ function DroppableColumn({
     <div
       ref={setNodeRef}
       data-testid={`column-${status.value}`}
-      className={`flex min-w-[300px] flex-1 flex-col rounded-md ${
+      className={`flex ${jobs.length > 0 ? "min-w-[300px]" : ""} flex-1 flex-col rounded-md ${
         isOver ? "bg-card" : "bg-card/65"
       }`}
     >
