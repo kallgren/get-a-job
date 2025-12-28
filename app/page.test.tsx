@@ -16,12 +16,13 @@ vi.mock("@/components/job-board", () => ({
   JobBoard: () => <div data-testid="job-board">JobBoard</div>,
 }));
 
-vi.mock("@/components/theme-toggle", () => ({
-  ThemeToggle: () => <div data-testid="theme-toggle">ThemeToggle</div>,
-}));
-
-vi.mock("@clerk/nextjs", () => ({
-  UserButton: () => <div data-testid="user-button">UserButton</div>,
+vi.mock("@/app/_components/header-actions", () => ({
+  HeaderActions: () => (
+    <div data-testid="header-actions">
+      <div data-testid="theme-toggle">ThemeToggle</div>
+      <div data-testid="user-button">UserButton</div>
+    </div>
+  ),
 }));
 
 import { auth } from "@clerk/nextjs/server";

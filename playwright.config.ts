@@ -28,6 +28,18 @@ export default defineConfig({
         storageState: "playwright/.auth/user.json",
       },
       dependencies: ["setup"],
+      testIgnore: /export-import\.spec\.ts/,
+    },
+    {
+      name: "chromium-serial",
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: "playwright/.auth/user.json",
+      },
+      dependencies: ["setup"],
+      testMatch: /export-import\.spec\.ts/,
+      fullyParallel: false,
+      workers: 1,
     },
   ],
   webServer: {

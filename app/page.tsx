@@ -1,8 +1,7 @@
-import { UserButton } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import { Briefcase } from "lucide-react";
 import { JobBoard } from "@/components/job-board";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { HeaderActions } from "@/app/_components/header-actions";
 import { getJobsByUserIdSafe } from "@/lib/queries/jobs";
 
 export default async function Home() {
@@ -35,10 +34,7 @@ export default async function Home() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <UserButton />
-          </div>
+          <HeaderActions />
         </div>
       </header>
       <main className="flex flex-1 flex-col pt-2">
