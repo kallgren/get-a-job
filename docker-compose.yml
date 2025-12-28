@@ -1,18 +1,18 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: job-tracker-db
+    container_name: get-a-job-db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: jobtracker
+      POSTGRES_USER: getajob
       POSTGRES_PASSWORD: devpassword
-      POSTGRES_DB: jobtracker
+      POSTGRES_DB: getajob
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U jobtracker"]
+      test: ["CMD-SHELL", "pg_isready -U getajob"]
       interval: 10s
       timeout: 5s
       retries: 5
