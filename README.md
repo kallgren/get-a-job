@@ -134,6 +134,151 @@ E2E tests require a test user in Clerk and specific environment variables:
 - `npm run db:push` - Push schema changes to database
 - `npm run db:migrate` - Create and run migrations
 - `npm run db:studio` - Open Prisma Studio (database GUI)
+- `npm run deploy:migrate` - Run migrations in production (manual)
+
+### Validation
+
+- `npm run type-check` - TypeScript type checking
+- `npm run validate` - Run all checks (type-check, lint, tests, E2E)
+
+## Deployment
+
+This app is deployed using GitHub Actions for CI/CD and Vercel for hosting.
+
+### Prerequisites
+
+- [Vercel](https://vercel.com) account (free Hobby tier)
+- [Neon](https://neon.tech) account for PostgreSQL (free tier)
+- [Clerk](https://clerk.com) production instance
+- GitHub repository
+
+### Initial Setup
+
+#### 1. Database (Neon PostgreSQL)
+
+1. Sign up at https://neon.tech
+2. Create a new project (e.g., "get-a-job-production")
+3. Copy the **pooled connection string** (important: use pooled, not direct)
+4. Save for later use in Vercel environment variables
+
+#### 2. Authentication (Clerk)
+
+1. Create a **production instance** in [Clerk Dashboard](https://dashboard.clerk.com) (separate from development)
+2. Enable "Email address" and "Password" authentication
+3. Copy production API keys:
+   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (starts with `pk_live_`)
+   - `CLERK_SECRET_KEY` (starts with `sk_live_`)
+4. Configure allowed domains (see note below):
+   - Add wildcard: `https://*.vercel.app`
+   - After first deployment, add specific URL: `https://get-a-job.vercel.app` (or whatever Vercel assigns)
+5. Create a test user for CI/CD:
+   - Email format: `your-email+clerk_test@example.com`
+   - Set a password
+   - Copy the User ID (starts with `user_`)
+
+**Note on Vercel URL:** You won't know your exact production URL until after deploying to Vercel. Two options:
+- **Option A (Recommended):** Start Vercel setup (step 4 below) to preview the URL before deploying, then configure Clerk
+- **Option B (Easier):** Use wildcard `https://*.vercel.app` initially, deploy to Vercel, then add the specific production URL to Clerk afterward
+
+#### 3. GitHub Secrets
+
+Add these secrets in GitHub → Settings → Secrets and variables → Actions:
+
+```
+CLERK_PUBLISHABLE_KEY_TEST=pk_live_... (production Clerk public key)
+CLERK_SECRET_KEY_TEST=sk_live_... (production Clerk secret key)
+TEST_USER_EMAIL=your-email+clerk_test@example.com
+TEST_USER_PASSWORD=your-test-password
+TEST_USER_ID=user_xxxxxxxxxxxxxxxxxxxxx
+```
+
+#### 4. Vercel
+
+1. Go to https://vercel.com and sign in with GitHub
+2. Click "New Project" and import your GitHub repository
+3. Framework Preset: Next.js (auto-detected)
+4. Add environment variables for **Production**:
+   ```
+   DATABASE_URL=postgresql://... (Neon pooled connection string)
+   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...
+   CLERK_SECRET_KEY=sk_live_...
+   NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+   NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+   NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/
+   NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/
+   ```
+5. Set Production Branch: `main`
+6. Deploy
+
+#### 5. Initial Database Migration
+
+After first Vercel deployment, run the migration:
+
+```bash
+# Install Vercel CLI if needed
+npm install -g vercel
+
+# Login and link project
+vercel login
+vercel link
+
+# Pull production env vars and run migration
+vercel env pull .env.production
+DATABASE_URL="<your-neon-url>" npm run deploy:migrate
+```
+
+### Continuous Deployment
+
+**Workflow:**
+1. Create feature branch and make changes
+2. Run `npm run validate` locally
+3. Commit and push to GitHub
+4. Create Pull Request
+5. GitHub Actions runs all checks (type check, lint, tests, E2E)
+6. Vercel creates preview deployment
+7. After checks pass, merge to `main`
+8. Vercel automatically deploys to production
+
+**CI/CD Pipeline:**
+- Type checking with TypeScript
+- ESLint code quality checks
+- Unit tests (Vitest)
+- E2E tests (Playwright with PostgreSQL service)
+- Automated on every PR and main branch push
+
+### Manual Deployment
+
+If needed, you can deploy manually using Vercel CLI:
+
+```bash
+# Deploy to production
+vercel --prod
+
+# Run migration after deploy (if schema changed)
+DATABASE_URL="<your-neon-url>" npm run deploy:migrate
+```
+
+### Troubleshooting
+
+**Build fails on Vercel:**
+- Check environment variables are set correctly
+- Verify `npm run build` works locally with production env vars
+- Check Vercel logs in Dashboard → Deployments → [deployment] → Building
+
+**E2E tests fail in GitHub Actions:**
+- Verify all 5 GitHub Secrets are set correctly
+- Ensure test user exists in Clerk production instance
+- Check test user ID matches Clerk Dashboard
+
+**Authentication fails in production:**
+- Verify Clerk allowed domains include your Vercel domain
+- Ensure environment variables use production Clerk keys (`pk_live_*`, not `pk_test_*`)
+- Add wildcard domain for previews: `https://*.vercel.app`
+
+**Database connection errors:**
+- Use Neon's **pooled connection string** (not direct)
+- Ensure connection string includes `?sslmode=require`
+- Check Neon project is active (free tier auto-suspends after inactivity)
 
 ## Project Structure
 

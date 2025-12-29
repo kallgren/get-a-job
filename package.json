@@ -20,7 +20,8 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "deploy:migrate": "prisma migrate deploy"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.35.4",
