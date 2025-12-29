@@ -9,16 +9,6 @@ export default async function Home() {
 
   const { data: jobs, error } = await getJobsByUserIdSafe(userId!);
 
-  if (error) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-destructive">
-          Failed to load jobs. Please try again later.
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="border-b border-border bg-card shadow-sm">
@@ -38,7 +28,15 @@ export default async function Home() {
         </div>
       </header>
       <main className="flex flex-1 flex-col pt-2">
-        <JobBoard jobs={jobs || []} />
+        {error ? (
+          <div className="flex flex-1 items-center justify-center">
+            <p className="text-destructive">
+              Whoops, something went wrong here. Please try again later.
+            </p>
+          </div>
+        ) : (
+          <JobBoard jobs={jobs || []} />
+        )}
       </main>
     </div>
   );

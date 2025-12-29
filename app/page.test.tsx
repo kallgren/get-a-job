@@ -54,7 +54,9 @@ describe("Home Page", () => {
     await renderHome();
 
     expect(
-      screen.getByText("Failed to load jobs. Please try again later.")
+      screen.getByText(
+        "Whoops, something went wrong here. Please try again later."
+      )
     ).toBeInTheDocument();
     expect(screen.queryByTestId("job-board")).not.toBeInTheDocument();
   });
@@ -68,7 +70,9 @@ describe("Home Page", () => {
     await renderHome();
 
     expect(
-      screen.queryByText("Failed to load jobs. Please try again later.")
+      screen.queryByText(
+        "Whoops, something went wrong here. Please try again later."
+      )
     ).not.toBeInTheDocument();
     expect(screen.getByText("Get a Job")).toBeInTheDocument();
     expect(screen.getByTestId("job-board")).toBeInTheDocument();
