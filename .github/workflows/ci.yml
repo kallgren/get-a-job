@@ -51,6 +51,8 @@ jobs:
 
       # 3. Install dependencies
       - name: Install dependencies
+        env:
+          DATABASE_URL: postgresql://getajob:testpassword@localhost:5432/getajob_test
         run: npm ci
 
       # 4. Cache Playwright browsers
