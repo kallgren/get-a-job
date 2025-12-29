@@ -61,35 +61,29 @@ jobs:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
 
-      # 5. Generate Prisma Client
-      - name: Generate Prisma Client
-        env:
-          DATABASE_URL: postgresql://getajob:testpassword@localhost:5432/getajob_test
-        run: npx prisma generate
-
-      # 6. Type check
+      # 5. Type check
       - name: TypeScript type check
         run: npm run type-check
 
-      # 7. Lint
+      # 6. Lint
       - name: Run ESLint
         run: npm run lint
 
-      # 8. Unit tests
+      # 7. Unit tests
       - name: Run unit tests
         run: npm test
 
-      # 9. Setup database for E2E tests
+      # 8. Setup database for E2E tests
       - name: Setup test database
         env:
           DATABASE_URL: postgresql://getajob:testpassword@localhost:5432/getajob_test
         run: npx prisma migrate deploy
 
-      # 10. Install Playwright browsers
+      # 9. Install Playwright browsers
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
-      # 11. Build Next.js app for E2E tests
+      # 10. Build Next.js app for E2E tests
       - name: Build Next.js app
         run: npm run build
         env:
@@ -101,7 +95,7 @@ jobs:
           NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: /
           NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: /
 
-      # 12. Run E2E tests
+      # 11. Run E2E tests
       - name: Run E2E tests
         run: npm run test:e2e
         env:
@@ -117,7 +111,7 @@ jobs:
           NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: /
           CI: true
 
-      # 13. Upload Playwright report on failure
+      # 12. Upload Playwright report on failure
       - name: Upload Playwright report
         if: failure()
         uses: actions/upload-artifact@v4
