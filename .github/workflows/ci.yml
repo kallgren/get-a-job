@@ -63,6 +63,8 @@ jobs:
 
       # 5. Generate Prisma Client
       - name: Generate Prisma Client
+        env:
+          DATABASE_URL: postgresql://getajob:testpassword@localhost:5432/getajob_test
         run: npx prisma generate
 
       # 6. Type check
