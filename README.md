@@ -212,20 +212,15 @@ TEST_USER_ID=user_xxxxxxxxxxxxxxxxxxxxx
 
 #### 5. Initial Database Migration
 
-After first Vercel deployment, run the migration:
+After first Vercel deployment, run the migration on your production database:
 
 ```bash
-# Install Vercel CLI if needed
-npm install -g vercel
-
-# Login and link project
-vercel login
-vercel link
-
-# Pull production env vars and run migration
-vercel env pull .env.production
-DATABASE_URL="<your-neon-url>" npm run deploy:migrate
+# Get your Neon connection string from Neon Dashboard
+# Then run migration (replace <your-neon-url> with actual pooled connection string)
+DATABASE_URL="postgresql://user:pass@ep-xxx.region.aws.neon.tech/dbname?sslmode=require" npm run deploy:migrate
 ```
+
+**Important:** Use your **pooled connection string** from Neon (not the direct connection string).
 
 ### Continuous Deployment
 
