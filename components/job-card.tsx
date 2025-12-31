@@ -65,6 +65,23 @@ export function JobCard({ job, onClick }: JobCardProps) {
           <AlignLeft className="size-4 text-card-foreground" />
         </div>
       )}
+      {/* Status stamp */}
+      {(job.status === "REJECTED" || job.status === "ACCEPTED") && (
+        <div
+          className="pointer-events-none absolute bottom-4 right-3 -rotate-45 select-none opacity-80"
+          aria-hidden="true"
+        >
+          <span
+            className={`text-2xl font-bold ${
+              job.status === "REJECTED"
+                ? "text-status-rejected"
+                : "text-status-accepted"
+            }`}
+          >
+            {job.status}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
