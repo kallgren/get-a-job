@@ -52,9 +52,11 @@ function DroppableColumn({
             aria-hidden="true"
           />
           <h2 className="font-semibold text-card-foreground">{status.label}</h2>
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground">
-            {jobs.length}
-          </span>
+          {jobs.length > 0 && (
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground">
+              {jobs.length}
+            </span>
+          )}
         </div>
         <Button
           variant="ghost"
