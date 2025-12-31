@@ -74,6 +74,9 @@ test.describe("Job Board", () => {
     // Reopen the job and verify the date was saved correctly
     await page.getByText("Acme Corp").click();
     await expect(page.getByRole("dialog")).toBeVisible();
+
+    // Modal opens in view mode - click edit button to see form
+    await page.getByRole("button", { name: "Edit job" }).click();
     await expect(page.getByLabel(/date applied/i)).toHaveValue("2025-12-15");
     await page.getByRole("button", { name: /cancel/i }).click();
   });
@@ -137,8 +140,16 @@ test.describe("Job Board", () => {
     // Click on the job card (stationary click, not drag)
     await page.getByText(uniqueCompany).click();
 
-    // Verify edit modal opens with existing data
+    // Verify modal opens in view mode
     await expect(page.getByRole("dialog")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: `${uniqueCompany} - Test Position` })
+    ).toBeVisible();
+
+    // Click edit button to enter edit mode
+    await page.getByRole("button", { name: "Edit job" }).click();
+
+    // Verify edit modal shows with existing data
     await expect(page.getByRole("heading", { name: "Edit Job" })).toBeVisible();
     await expect(page.getByLabel(/company/i)).toHaveValue(uniqueCompany);
     await expect(page.getByLabel(/title/i)).toHaveValue("Test Position");
@@ -226,6 +237,9 @@ test.describe("Job Board", () => {
     // Verify the date was preserved after drag and drop
     await page.getByText(uniqueCompany).click();
     await expect(page.getByRole("dialog")).toBeVisible();
+
+    // Click edit button to enter edit mode and check date field
+    await page.getByRole("button", { name: "Edit job" }).click();
     await expect(page.getByLabel(/date applied/i)).toHaveValue(testDate);
     await page.getByRole("button", { name: /cancel/i }).click();
   });
@@ -250,9 +264,12 @@ test.describe("Job Board", () => {
       dialog.accept();
     });
 
-    // Open edit modal and click delete
+    // Open modal (view mode) and switch to edit mode to access delete button
     await page.getByText(uniqueCompany).click();
     await expect(page.getByRole("dialog")).toBeVisible();
+
+    // Click edit button to enter edit mode where delete button is available
+    await page.getByRole("button", { name: "Edit job" }).click();
     await page.getByRole("button", { name: /delete/i }).click();
 
     // Verify modal closes and job is removed

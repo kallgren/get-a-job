@@ -30,9 +30,7 @@ test.describe("Export/Import", () => {
       await page.getByLabel(/title/i).fill("Senior Developer");
       await page.getByLabel(/location/i).fill("Stockholm, Sweden");
       await page.getByLabel(/job posting url/i).fill("https://example.com/job");
-      await page
-        .getByLabel(/job posting text/i)
-        .fill("Full job description here");
+      await page.getByLabel(/description/i).fill("Full job description here");
       await page.getByLabel(/notes/i).fill("Very interested in this role");
       await page.getByLabel(/contact person/i).fill("Jane Doe");
       await page.getByLabel(/date applied/i).fill("2025-01-15");
