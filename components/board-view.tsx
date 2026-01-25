@@ -6,6 +6,7 @@ import { JobCard } from "@/components/job-card";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
 import { getStatusColor } from "@/lib/utils";
+import { useEffect } from "react";
 
 const JOB_STATUSES: { value: JobStatus; label: string }[] = [
   { value: "WISHLIST", label: "Wishlist" },
@@ -20,6 +21,7 @@ interface BoardViewProps {
   jobs: Job[];
   onJobClick: (job: Job) => void;
   onAddClick: (status: JobStatus) => void;
+  onPasteUrl?: (url: string) => void;
 }
 
 function DroppableColumn({
@@ -81,7 +83,40 @@ function DroppableColumn({
   );
 }
 
-export function BoardView({ jobs, onJobClick, onAddClick }: BoardViewProps) {
+export function BoardView({
+  jobs,
+  onJobClick,
+  onAddClick,
+  onPasteUrl,
+}: BoardViewProps) {
+  // Paste event listener for URL extraction
+  useEffect(() => {
+    const handlePaste = async (e: ClipboardEvent) => {
+      // Ignore paste events in input fields or textareas
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      ) {
+        return;
+      }
+
+      try {
+        const text = await navigator.clipboard.readText();
+
+        // Validate that pasted text is a URL
+        new URL(text);
+
+        // Call the paste handler if provided
+        onPasteUrl?.(text);
+      } catch {
+        // Not a valid URL or clipboard read failed - ignore silently
+      }
+    };
+
+    document.addEventListener("paste", handlePaste);
+    return () => document.removeEventListener("paste", handlePaste);
+  }, [onPasteUrl]);
+
   const jobsByStatus = JOB_STATUSES.reduce(
     (acc, status) => {
       acc[status.value] = jobs.filter((job) => job.status === status.value);

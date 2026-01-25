@@ -15,6 +15,8 @@ import { useRouter } from "next/navigation";
 import { BoardView } from "@/components/board-view";
 import { JobModal } from "@/components/job-modal";
 import { JobCard } from "@/components/job-card";
+import { toast } from "sonner";
+import type { ExtractedJobData } from "@/lib/schemas";
 
 interface JobBoardProps {
   jobs: Job[];
@@ -28,6 +30,9 @@ export function JobBoard({ jobs: initialJobs }: JobBoardProps) {
   const [initialStatus, setInitialStatus] = useState<JobStatus | undefined>(
     undefined
   );
+  const [extractedJobData, setExtractedJobData] = useState<
+    Partial<ExtractedJobData> | undefined
+  >(undefined);
   const [activeJob, setActiveJob] = useState<Job | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -68,7 +73,53 @@ export function JobBoard({ jobs: initialJobs }: JobBoardProps) {
     setTimeout(() => {
       setSelectedJob(undefined);
       setInitialStatus(undefined);
+      setExtractedJobData(undefined);
     }, 200);
+  }
+
+  async function handlePasteUrl(url: string) {
+    toast.info("We're getting your job details...", {
+      description: "This will just take a moment",
+    });
+
+    try {
+      const response = await fetch("/api/jobs/extract", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast.success("All done!", {
+          description: "Review and save the job when ready",
+        });
+        // Open modal with extracted data
+        setExtractedJobData(result.data);
+        setInitialStatus("WISHLIST");
+        setIsModalOpen(true);
+      } else {
+        toast.warning("Couldn't extract job details", {
+          description: "Full error message available in the console",
+        });
+
+        // Log error to console for debugging
+        console.error("Extraction error:", result.error);
+
+        // Open modal with just URL
+        setExtractedJobData({ jobPostingUrl: url });
+        setIsModalOpen(true);
+      }
+    } catch (error) {
+      toast.warning("Something went wrong", {
+        description: "Full error message available in the console",
+      });
+      console.error("Extraction failed:", error);
+      // Fallback: open with URL only
+      setExtractedJobData({ jobPostingUrl: url });
+      setIsModalOpen(true);
+    }
   }
 
   function handleDragStart(event: DragStartEvent) {
@@ -126,6 +177,7 @@ export function JobBoard({ jobs: initialJobs }: JobBoardProps) {
       jobs={jobs}
       onJobClick={handleJobClick}
       onAddClick={handleNewJob}
+      onPasteUrl={handlePasteUrl}
     />
   );
 
@@ -155,6 +207,7 @@ export function JobBoard({ jobs: initialJobs }: JobBoardProps) {
         onOpenChange={handleModalClose}
         job={selectedJob}
         initialStatus={initialStatus}
+        initialData={extractedJobData}
         onSuccess={() => router.refresh()}
       />
     </div>

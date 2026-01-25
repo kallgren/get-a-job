@@ -17,6 +17,7 @@ A modern job application tracking system built with Next.js, designed to help yo
 
 ## Features
 
+- **AI-Powered Job Extraction:** Paste any job listing URL (cmd+v/ctrl+v) directly on the board to automatically extract company, title, location, and job description using Claude AI
 - Track job applications through different stages (Wishlist → Applied → Interview → Offer → Accepted/Rejected)
 - Kanban board and table views
 - Dark mode support with system preference detection
@@ -49,6 +50,7 @@ cp .env.example .env.local
 Then edit `.env.local` and add your:
 
 - Clerk API keys (from https://clerk.com)
+- Claude API key (from https://console.anthropic.com) - required for AI job extraction
 - Uploadthing token (from https://uploadthing.com)
 
 3. Start PostgreSQL with Docker:

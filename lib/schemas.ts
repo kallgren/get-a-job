@@ -54,6 +54,23 @@ export const importRequestSchema = z.object({
   jobs: z.array(jobImportSchema),
 });
 
+// Job extraction schemas for AI-powered import
+export const extractJobSchema = z.object({
+  url: z.url({ message: "Invalid URL" }),
+});
+
+export type ExtractJobRequest = z.infer<typeof extractJobSchema>;
+
+// Type for extracted job data (matches claude-extract.ts interface)
+export type ExtractedJobData = {
+  company?: string;
+  title?: string;
+  location?: string;
+  jobPostingUrl: string;
+  jobPostingText?: string;
+  notes?: string;
+};
+
 // Manually define ExportedJob type to explicitly show null values in JSON format
 // This is the format we create when exporting. The jobImportSchema validates this format during import.
 export type ExportedJob = {

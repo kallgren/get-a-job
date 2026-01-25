@@ -55,6 +55,7 @@ interface JobModalProps {
   job?: Job;
   onSuccess?: () => void;
   initialStatus?: JobStatus;
+  initialData?: Partial<JobFormData>;
 }
 
 type ModalMode = "view" | "edit";
@@ -74,6 +75,7 @@ export function JobModal({
   job,
   onSuccess,
   initialStatus,
+  initialData,
 }: JobModalProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -107,6 +109,7 @@ export function JobModal({
       setMode(job ? "view" : "edit");
 
       if (job) {
+        // Editing existing job
         form.reset({
           company: job.company,
           title: job.title ?? "",
@@ -120,7 +123,24 @@ export function JobModal({
           coverLetterUrl: job.coverLetterUrl ?? "",
           dateApplied: isoToDate(job.dateApplied),
         });
+      } else if (initialData) {
+        // New job with AI-extracted data
+        form.reset({
+          company: initialData.company ?? "",
+          title: initialData.title ?? "",
+          location: initialData.location ?? "",
+          jobPostingUrl: initialData.jobPostingUrl ?? "",
+          jobPostingText: initialData.jobPostingText ?? "",
+          status: initialStatus ?? "WISHLIST",
+          notes: initialData.notes ?? "",
+          contactPerson: "",
+          resumeUrl: "",
+          coverLetterUrl: "",
+          dateApplied: "",
+          order: "0",
+        });
       } else {
+        // New job with no extracted data
         form.reset({
           company: "",
           title: "",
@@ -138,7 +158,7 @@ export function JobModal({
       setError(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, job, initialStatus]);
+  }, [open, job, initialStatus, initialData]);
 
   async function onSubmit(data: JobFormData) {
     setIsSubmitting(true);
