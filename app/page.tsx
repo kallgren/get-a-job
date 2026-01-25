@@ -1,5 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
-import { Briefcase } from "lucide-react";
+import { Briefcase, ThumbsUp } from "lucide-react";
 import { JobBoard } from "@/components/job-board";
 import { HeaderActions } from "@/app/_components/header-actions";
 import { getJobsByUserIdSafe } from "@/lib/queries/jobs";
@@ -14,8 +14,11 @@ export default async function Home() {
       <header className="border-b border-border bg-card shadow-sm">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center rounded-lg bg-brand-blue p-2">
-              <Briefcase className="h-7 w-7 text-brand-blue-foreground" />
+            <div className="relative flex items-center justify-center rounded-full bg-brand-blue p-3">
+              <Briefcase className="h-6 w-6 text-brand-blue-foreground" />
+              <div className="absolute -right-1 -top-1 rounded-full bg-background p-1">
+                <ThumbsUp className="h-4 w-4 rotate-12 text-brand-blue" />
+              </div>
             </div>
             <div>
               <h1 className="text-xl font-semibold">Get a Job</h1>
