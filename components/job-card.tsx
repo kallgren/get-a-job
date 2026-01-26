@@ -1,7 +1,8 @@
 "use client";
 
 import { Job } from "@prisma/client";
-import { useDraggable } from "@dnd-kit/core";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { AlignLeft } from "lucide-react";
 import { getStatusColor, formatJobDate } from "@/lib/utils";
 
@@ -11,15 +12,17 @@ interface JobCardProps {
 }
 
 export function JobCard({ job, onClick }: JobCardProps) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id: job.id,
-    data: { job },
-  });
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useSortable({
+      id: job.id,
+      data: { job },
+    });
 
   const style = {
-    // transform: CSS.Translate.toString(transform),
+    transform: CSS.Transform.toString(transform),
+    // No transition - snappy, instant movement
     opacity: isDragging ? 0.5 : 1,
-    borderStyle: isDragging ? "dashed" : "solid",
+    borderStyle: isDragging ? ("dashed" as const) : ("solid" as const),
   };
 
   const handleClick = () => {

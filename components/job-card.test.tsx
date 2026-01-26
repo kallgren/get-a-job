@@ -3,12 +3,13 @@ import { render, screen } from "@testing-library/react";
 import { JobCard } from "./job-card";
 import { Job, JobStatus } from "@prisma/client";
 
-// Mock @dnd-kit/core
-vi.mock("@dnd-kit/core", () => ({
-  useDraggable: vi.fn(() => ({
+// Mock @dnd-kit/sortable
+vi.mock("@dnd-kit/sortable", () => ({
+  useSortable: vi.fn(() => ({
     attributes: {},
     listeners: {},
     setNodeRef: vi.fn(),
+    transform: null,
     isDragging: false,
   })),
 }));
