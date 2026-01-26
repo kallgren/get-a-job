@@ -126,9 +126,19 @@ export function BoardView({
     return () => document.removeEventListener("paste", handlePaste);
   }, [onPasteUrl]);
 
+  // Sort jobs by order (asc), then by createdAt (desc) for ties
+  const sortedJobs = [...jobs].sort((a, b) => {
+    const orderCompare = a.order.localeCompare(b.order);
+    if (orderCompare !== 0) return orderCompare;
+    // Tie-breaker: createdAt descending (newer first)
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
   const jobsByStatus = JOB_STATUSES.reduce(
     (acc, status) => {
-      acc[status.value] = jobs.filter((job) => job.status === status.value);
+      acc[status.value] = sortedJobs.filter(
+        (job) => job.status === status.value
+      );
       return acc;
     },
     {} as Record<JobStatus, Job[]>

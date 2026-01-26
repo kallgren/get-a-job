@@ -19,6 +19,21 @@ import { JobModal } from "@/components/job-modal";
 import { JobCard } from "@/components/job-card";
 import { toast } from "sonner";
 import type { ExtractedJobData } from "@/lib/schemas";
+import {
+  calculateOrderBetween,
+  calculateOrderAtStart,
+  calculateOrderAtEnd,
+} from "@/lib/fractional-index";
+
+// All valid job statuses for column detection
+const JOB_STATUSES: JobStatus[] = [
+  "WISHLIST",
+  "APPLIED",
+  "INTERVIEW",
+  "OFFER",
+  "ACCEPTED",
+  "REJECTED",
+];
 
 interface JobBoardProps {
   jobs: Job[];
@@ -138,6 +153,26 @@ export function JobBoard({ jobs: initialJobs }: JobBoardProps) {
     // Currently handled by SortableContext for reordering
   }
 
+  // Helper to check if an id is a column (JobStatus) or a card (job id)
+  function isColumnId(id: string | number): id is JobStatus {
+    return JOB_STATUSES.includes(id as JobStatus);
+  }
+
+  // Sort jobs by order field (asc), falling back to createdAt (desc) for ties
+  function getSortedJobsForStatus(status: JobStatus, jobList: Job[]): Job[] {
+    return jobList
+      .filter((j) => j.status === status)
+      .sort((a, b) => {
+        // Sort by order ascending
+        const orderCompare = a.order.localeCompare(b.order);
+        if (orderCompare !== 0) return orderCompare;
+        // Tie-breaker: createdAt descending (newer first)
+        return (
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+      });
+  }
+
   async function handleDragEnd(event: DragEndEvent) {
     setActiveJob(null);
 
@@ -146,27 +181,112 @@ export function JobBoard({ jobs: initialJobs }: JobBoardProps) {
     if (!over) return;
 
     const jobId = Number(active.id);
-    const newStatus = over.id as JobStatus;
     const job = jobs.find((j) => j.id === jobId);
 
-    if (!job || job.status === newStatus) return;
+    if (!job) return;
+
+    // Determine target status and index
+    let targetStatus: JobStatus;
+    let targetIndex: number;
+
+    const overId = over.id;
+
+    if (isColumnId(overId)) {
+      // Dropped on a column - add to end of that column
+      targetStatus = overId;
+      const columnJobs = getSortedJobsForStatus(targetStatus, jobs);
+      targetIndex = columnJobs.length;
+    } else {
+      // Dropped on a card - find which column and position
+      const overJobId = Number(overId);
+      const overJob = jobs.find((j) => j.id === overJobId);
+
+      if (!overJob) return;
+
+      targetStatus = overJob.status;
+      const columnJobs = getSortedJobsForStatus(targetStatus, jobs);
+      targetIndex = columnJobs.findIndex((j) => j.id === overJobId);
+
+      // If dragging within the same column and the active job is before the target,
+      // we need to account for the removal of the active job
+      if (job.status === targetStatus) {
+        const activeIndex = columnJobs.findIndex((j) => j.id === jobId);
+        if (activeIndex < targetIndex) {
+          // The card will be removed from before the target, so don't adjust index
+          // arrayMove handles this, but for order calculation we need the final position
+        }
+      }
+    }
+
+    // Get sorted jobs in the target column (excluding the dragged job)
+    const columnJobsWithoutActive = getSortedJobsForStatus(
+      targetStatus,
+      jobs
+    ).filter((j) => j.id !== jobId);
+
+    // Calculate the new order value
+    let newOrder: string;
+    if (columnJobsWithoutActive.length === 0) {
+      // Empty column - generate first order
+      newOrder = calculateOrderBetween(null, null);
+    } else if (targetIndex <= 0) {
+      // Insert at start
+      newOrder = calculateOrderAtStart(columnJobsWithoutActive[0].order);
+    } else if (targetIndex >= columnJobsWithoutActive.length) {
+      // Insert at end
+      newOrder = calculateOrderAtEnd(
+        columnJobsWithoutActive[columnJobsWithoutActive.length - 1].order
+      );
+    } else {
+      // Insert between two items
+      const beforeJob = columnJobsWithoutActive[targetIndex - 1];
+      const afterJob = columnJobsWithoutActive[targetIndex];
+      newOrder = calculateOrderBetween(beforeJob.order, afterJob.order);
+    }
+
+    // Check if anything actually changed
+    const statusChanged = job.status !== targetStatus;
+    const orderChanged = job.order !== newOrder;
+
+    if (!statusChanged && !orderChanged) {
+      // No change - dropped in same position
+      return;
+    }
 
     // Optimistic update
     const oldStatus = job.status;
-    setJobs((prevJobs) =>
-      prevJobs.map((j) => (j.id === jobId ? { ...j, status: newStatus } : j))
-    );
+    const oldOrder = job.order;
+
+    setJobs((prevJobs) => {
+      // Update the job with new status and order
+      const updatedJobs = prevJobs.map((j) =>
+        j.id === jobId ? { ...j, status: targetStatus, order: newOrder } : j
+      );
+
+      // If moving within the same column, use arrayMove for visual reordering
+      if (job.status === targetStatus) {
+        const columnJobs = getSortedJobsForStatus(targetStatus, updatedJobs);
+        const oldIndex = columnJobs.findIndex((j) => j.id === jobId);
+        const newIndex = columnJobs.findIndex((j) => j.order === newOrder);
+        if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
+          // The order update already happened, no need for arrayMove
+          // The jobs will re-sort based on order
+        }
+      }
+
+      return updatedJobs;
+    });
 
     try {
-      // Call API to update status
+      // Call API to update status and order
       const response = await fetch(`/api/jobs/${jobId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({ status: targetStatus, order: newOrder }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update job status");
+        throw new Error("Failed to update job");
       }
 
       // Refresh server data to ensure consistency
@@ -174,10 +294,14 @@ export function JobBoard({ jobs: initialJobs }: JobBoardProps) {
     } catch (error) {
       // Revert optimistic update on error
       setJobs((prevJobs) =>
-        prevJobs.map((j) => (j.id === jobId ? { ...j, status: oldStatus } : j))
+        prevJobs.map((j) =>
+          j.id === jobId ? { ...j, status: oldStatus, order: oldOrder } : j
+        )
       );
       console.error("Error updating job:", error);
-      // TODO: Show error toast
+      toast.error("Couldn't move that card", {
+        description: "Something went wrong, please try again",
+      });
     }
   }
 
