@@ -2,6 +2,10 @@
 
 import { Job, JobStatus } from "@prisma/client";
 import { useDroppable } from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { JobCard } from "@/components/job-card";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
@@ -70,9 +74,14 @@ function DroppableColumn({
         </Button>
       </div>
       <div className="flex-1 space-y-2 px-4 pb-4 transition-colors">
-        {jobs.map((job) => (
-          <JobCard key={job.id} job={job} onClick={onJobClick} />
-        ))}
+        <SortableContext
+          items={jobs.map((job) => job.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {jobs.map((job) => (
+            <JobCard key={job.id} job={job} onClick={onJobClick} />
+          ))}
+        </SortableContext>
         {jobs.length === 0 && isOver && (
           <div className="flex h-32 items-center justify-center rounded-md border-2 border-dashed border-border text-sm text-muted-foreground">
             Drop jobs here
