@@ -2,6 +2,8 @@
 
 A modern job application tracking system built with Next.js, designed to help you manage your job search effectively.
 
+<video src="docs/demo.mp4" width="720" autoplay loop muted playsinline></video>
+
 ## Tech Stack
 
 - **Framework:** Next.js 16 (App Router)
