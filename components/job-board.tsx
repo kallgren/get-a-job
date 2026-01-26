@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Job, JobStatus } from "@prisma/client";
 import {
   DndContext,
@@ -52,6 +52,13 @@ export function JobBoard({ jobs: initialJobs }: JobBoardProps) {
   >(undefined);
   const [activeJob, setActiveJob] = useState<Job | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+
+  // Track the target position during drag - this is updated in handleDragOver
+  // and used in handleDragEnd to determine where to place the item
+  const dragTargetRef = useRef<{
+    status: JobStatus;
+    overItemId: number | null; // null means end of column
+  } | null>(null);
 
   // Only render DnD on client to avoid hydration mismatch
   useEffect(() => {
@@ -146,11 +153,43 @@ export function JobBoard({ jobs: initialJobs }: JobBoardProps) {
     }
   }
 
-  // Handler for drag over events - dnd-kit's sortable uses this internally
-  // for reordering. Could be extended for additional visual feedback if needed.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  function handleDragOver(_event: DragOverEvent) {
-    // Currently handled by SortableContext for reordering
+  // Handler for drag over events
+  // 1. Moves items between columns (status change) so ghost appears in right column
+  // 2. Tracks the target position in a ref for use in handleDragEnd
+  function handleDragOver(event: DragOverEvent) {
+    const { active, over } = event;
+
+    if (!over) return;
+
+    const activeId = Number(active.id);
+    const activeJob = jobs.find((j) => j.id === activeId);
+    if (!activeJob) return;
+
+    // Determine target column and position
+    let overStatus: JobStatus;
+    let overItemId: number | null = null;
+
+    if (isColumnId(over.id)) {
+      overStatus = over.id;
+      overItemId = null; // End of column
+    } else {
+      overItemId = Number(over.id);
+      const overJob = jobs.find((j) => j.id === overItemId);
+      if (!overJob) return;
+      overStatus = overJob.status;
+    }
+
+    // Update the target ref - this is what we'll use in handleDragEnd
+    dragTargetRef.current = { status: overStatus, overItemId };
+
+    // If moving to a different column, update status so ghost appears there
+    if (activeJob.status !== overStatus) {
+      setJobs((prevJobs) =>
+        prevJobs.map((j) =>
+          j.id === activeId ? { ...j, status: overStatus } : j
+        )
+      );
+    }
   }
 
   // Helper to check if an id is a column (JobStatus) or a card (job id)
@@ -159,13 +198,15 @@ export function JobBoard({ jobs: initialJobs }: JobBoardProps) {
   }
 
   // Sort jobs by order field (asc), falling back to createdAt (desc) for ties
+  // IMPORTANT: Use simple string comparison, not localeCompare, because
+  // fractional-indexing uses base62 (0-9, A-Z, a-z) which requires ASCII ordering
   function getSortedJobsForStatus(status: JobStatus, jobList: Job[]): Job[] {
     return jobList
       .filter((j) => j.status === status)
       .sort((a, b) => {
-        // Sort by order ascending
-        const orderCompare = a.order.localeCompare(b.order);
-        if (orderCompare !== 0) return orderCompare;
+        // Sort by order ascending using simple string comparison
+        if (a.order < b.order) return -1;
+        if (a.order > b.order) return 1;
         // Tie-breaker: createdAt descending (newer first)
         return (
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -174,55 +215,114 @@ export function JobBoard({ jobs: initialJobs }: JobBoardProps) {
   }
 
   async function handleDragEnd(event: DragEndEvent) {
-    setActiveJob(null);
-
     const { active, over } = event;
 
-    if (!over) return;
+    console.log("DROP EVENT:", {
+      activeId: active.id,
+      overId: over?.id,
+      overData: over?.data?.current,
+      activeData: active.data?.current,
+    });
+
+    // If drag was cancelled (dropped outside valid area), revert any status changes
+    // made by handleDragOver and reset activeJob
+    if (!over) {
+      if (activeJob) {
+        // Revert the job to its original status (before dragOver changed it)
+        setJobs((prevJobs) =>
+          prevJobs.map((j) =>
+            j.id === activeJob.id ? { ...j, status: activeJob.status } : j
+          )
+        );
+      }
+      setActiveJob(null);
+      return;
+    }
+
+    // Clear activeJob at the end, not beginning, so we can access original values
+    const activeJobSnapshot = activeJob;
+    setActiveJob(null);
 
     const jobId = Number(active.id);
     const job = jobs.find((j) => j.id === jobId);
 
     if (!job) return;
 
-    // Determine target status and index
-    let targetStatus: JobStatus;
-    let targetIndex: number;
+    // Use activeJobSnapshot for original status since handleDragOver may have changed job.status
+    const originalStatus = activeJobSnapshot?.status ?? job.status;
+    const originalOrder = activeJobSnapshot?.order ?? job.order;
 
+    // Determine target status
+    let targetStatus: JobStatus;
     const overId = over.id;
 
     if (isColumnId(overId)) {
-      // Dropped on a column - add to end of that column
+      // Dropped on a column
       targetStatus = overId;
-      const columnJobs = getSortedJobsForStatus(targetStatus, jobs);
-      targetIndex = columnJobs.length;
     } else {
-      // Dropped on a card - find which column and position
+      // Dropped on a card - get its column
       const overJobId = Number(overId);
       const overJob = jobs.find((j) => j.id === overJobId);
-
       if (!overJob) return;
-
       targetStatus = overJob.status;
-      const columnJobs = getSortedJobsForStatus(targetStatus, jobs);
-      targetIndex = columnJobs.findIndex((j) => j.id === overJobId);
-
-      // If dragging within the same column and the active job is before the target,
-      // we need to account for the removal of the active job
-      if (job.status === targetStatus) {
-        const activeIndex = columnJobs.findIndex((j) => j.id === jobId);
-        if (activeIndex < targetIndex) {
-          // The card will be removed from before the target, so don't adjust index
-          // arrayMove handles this, but for order calculation we need the final position
-        }
-      }
     }
 
     // Get sorted jobs in the target column (excluding the dragged job)
+    // IMPORTANT: Must exclude the dragged job because handleDragOver may have
+    // already moved it to this column with its old order value, which would
+    // corrupt the sort order and index calculations
     const columnJobsWithoutActive = getSortedJobsForStatus(
       targetStatus,
       jobs
     ).filter((j) => j.id !== jobId);
+
+    // Calculate target index from the filtered list
+    let targetIndex: number;
+    if (isColumnId(overId)) {
+      // Dropped on column = end of list
+      targetIndex = columnJobsWithoutActive.length;
+    } else {
+      // Dropped on a card - find its position in the filtered list
+      const overJobId = Number(overId);
+      const overIndex = columnJobsWithoutActive.findIndex(
+        (j) => j.id === overJobId
+      );
+
+      if (overIndex === -1) {
+        // If the card we dropped on isn't found (shouldn't happen), default to end
+        targetIndex = columnJobsWithoutActive.length;
+      } else if (originalStatus === targetStatus) {
+        // WITHIN-COLUMN reorder: compare positions in the SAME array to determine direction
+        // Get the original sorted column (including the dragged item)
+        const originalColumnJobs = getSortedJobsForStatus(
+          originalStatus,
+          jobs.map((j) =>
+            j.id === jobId ? { ...j, status: originalStatus } : j
+          )
+        );
+        // Compare indices in the ORIGINAL array (both items present)
+        const originalActiveIndex = originalColumnJobs.findIndex(
+          (j) => j.id === jobId
+        );
+        const originalOverIndex = originalColumnJobs.findIndex(
+          (j) => j.id === Number(overId)
+        );
+
+        if (originalActiveIndex < originalOverIndex) {
+          // Moving DOWN - insert AFTER the over item (in filtered array)
+          targetIndex = overIndex + 1;
+        } else {
+          // Moving UP - insert BEFORE the over item (in filtered array)
+          targetIndex = overIndex;
+        }
+      } else {
+        // CROSS-COLUMN move: insert AT the position of the over item (before it)
+        targetIndex = overIndex;
+      }
+    }
+
+    // Clear the drag target ref
+    dragTargetRef.current = null;
 
     // Calculate the new order value
     let newOrder: string;
@@ -241,21 +341,28 @@ export function JobBoard({ jobs: initialJobs }: JobBoardProps) {
       // Insert between two items
       const beforeJob = columnJobsWithoutActive[targetIndex - 1];
       const afterJob = columnJobsWithoutActive[targetIndex];
-      newOrder = calculateOrderBetween(beforeJob.order, afterJob.order);
+
+      // Handle edge case: if both jobs have the same order (e.g., all "0"),
+      // we can't calculate between them. Insert before the afterJob instead.
+      if (beforeJob.order >= afterJob.order) {
+        newOrder = calculateOrderAtStart(afterJob.order);
+      } else {
+        newOrder = calculateOrderBetween(beforeJob.order, afterJob.order);
+      }
     }
 
-    // Check if anything actually changed
-    const statusChanged = job.status !== targetStatus;
-    const orderChanged = job.order !== newOrder;
+    // Check if anything actually changed (compare to original, not current after dragOver)
+    const statusChanged = originalStatus !== targetStatus;
+    const orderChanged = originalOrder !== newOrder;
 
     if (!statusChanged && !orderChanged) {
       // No change - dropped in same position
       return;
     }
 
-    // Optimistic update
-    const oldStatus = job.status;
-    const oldOrder = job.order;
+    // For reverting on error, use original values
+    const oldStatus = originalStatus;
+    const oldOrder = originalOrder;
 
     setJobs((prevJobs) => {
       // Update the job with new status and order
@@ -264,7 +371,7 @@ export function JobBoard({ jobs: initialJobs }: JobBoardProps) {
       );
 
       // If moving within the same column, use arrayMove for visual reordering
-      if (job.status === targetStatus) {
+      if (originalStatus === targetStatus) {
         const columnJobs = getSortedJobsForStatus(targetStatus, updatedJobs);
         const oldIndex = columnJobs.findIndex((j) => j.id === jobId);
         const newIndex = columnJobs.findIndex((j) => j.order === newOrder);

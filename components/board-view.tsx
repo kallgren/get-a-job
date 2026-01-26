@@ -127,9 +127,11 @@ export function BoardView({
   }, [onPasteUrl]);
 
   // Sort jobs by order (asc), then by createdAt (desc) for ties
+  // IMPORTANT: Use simple string comparison, not localeCompare, because
+  // fractional-indexing uses base62 (0-9, A-Z, a-z) which requires ASCII ordering
   const sortedJobs = [...jobs].sort((a, b) => {
-    const orderCompare = a.order.localeCompare(b.order);
-    if (orderCompare !== 0) return orderCompare;
+    if (a.order < b.order) return -1;
+    if (a.order > b.order) return 1;
     // Tie-breaker: createdAt descending (newer first)
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
