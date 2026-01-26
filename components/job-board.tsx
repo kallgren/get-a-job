@@ -5,9 +5,11 @@ import { Job, JobStatus } from "@prisma/client";
 import {
   DndContext,
   DragEndEvent,
+  DragOverEvent,
   DragOverlay,
   DragStartEvent,
   PointerSensor,
+  closestCorners,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
@@ -129,6 +131,13 @@ export function JobBoard({ jobs: initialJobs }: JobBoardProps) {
     }
   }
 
+  // Handler for drag over events - dnd-kit's sortable uses this internally
+  // for reordering. Could be extended for additional visual feedback if needed.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function handleDragOver(_event: DragOverEvent) {
+    // Currently handled by SortableContext for reordering
+  }
+
   async function handleDragEnd(event: DragEndEvent) {
     setActiveJob(null);
 
@@ -186,7 +195,9 @@ export function JobBoard({ jobs: initialJobs }: JobBoardProps) {
       {isMounted ? (
         <DndContext
           sensors={sensors}
+          collisionDetection={closestCorners}
           onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
         >
           {boardView}
