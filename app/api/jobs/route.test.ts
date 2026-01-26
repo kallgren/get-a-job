@@ -12,6 +12,7 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     job: {
       findMany: vi.fn(),
+      findFirst: vi.fn(),
       create: vi.fn(),
     },
   },
@@ -138,12 +139,14 @@ describe("POST /api/jobs", () => {
       dateApplied: null,
       deletedAt: null,
       contactPerson: null,
-      order: "0",
+      order: "a0",
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
     vi.mocked(auth).mockResolvedValue({ userId: mockUserId } as MockAuth);
+    // Mock findFirst to return null (empty column)
+    vi.mocked(prisma.job.findFirst).mockResolvedValue(null);
     vi.mocked(prisma.job.create).mockResolvedValue(mockJob);
 
     const request = new Request("http://test/api/jobs", {
@@ -266,12 +269,14 @@ describe("POST /api/jobs", () => {
       dateApplied: null,
       deletedAt: null,
       contactPerson: null,
-      order: "0",
+      order: "a0",
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
     vi.mocked(auth).mockResolvedValue({ userId: mockUserId } as MockAuth);
+    // Mock findFirst to return null (empty column)
+    vi.mocked(prisma.job.findFirst).mockResolvedValue(null);
     vi.mocked(prisma.job.create).mockResolvedValue(mockJob);
 
     const request = new Request("http://test/api/jobs", {

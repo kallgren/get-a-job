@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { Job } from "@prisma/client";
+import { Job, JobStatus } from "@prisma/client";
 
 /**
  * Fetch all non-deleted jobs for a user, ordered by position then creation date
@@ -81,4 +81,20 @@ export async function deleteJob(id: number) {
       deletedAt: new Date(),
     },
   });
+}
+
+/**
+ * Get the order value of the first job in a column (by status)
+ * Used for calculating order when adding new jobs at the top of a column
+ */
+export async function getFirstJobOrderInColumn(
+  userId: string,
+  status: JobStatus
+): Promise<string | null> {
+  const firstJob = await prisma.job.findFirst({
+    where: { userId, status, deletedAt: null },
+    orderBy: { order: "asc" },
+    select: { order: true },
+  });
+  return firstJob?.order ?? null;
 }
