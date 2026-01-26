@@ -77,7 +77,7 @@ describe("GET /api/jobs", () => {
         userId: mockUserId,
         deletedAt: null,
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ order: "asc" }, { createdAt: "desc" }],
     });
   });
 

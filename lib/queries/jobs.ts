@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { Job } from "@prisma/client";
 
 /**
- * Fetch all non-deleted jobs for a user, ordered by creation date
+ * Fetch all non-deleted jobs for a user, ordered by position then creation date
  */
 export async function getJobsByUserId(userId: string) {
   return await prisma.job.findMany({
@@ -10,7 +10,7 @@ export async function getJobsByUserId(userId: string) {
       userId,
       deletedAt: null,
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ order: "asc" }, { createdAt: "desc" }],
   });
 }
 
