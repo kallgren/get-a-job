@@ -10,7 +10,7 @@ import { JobCard } from "@/components/job-card";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
 import { getStatusColor } from "@/lib/utils";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 const JOB_STATUSES: { value: JobStatus; label: string }[] = [
   { value: "WISHLIST", label: "Wishlist" },
@@ -43,6 +43,10 @@ function DroppableColumn({
     id: status.value,
   });
 
+  // Memoize the items array to prevent SortableContext from re-initializing on every render
+  // Only recreate when the job IDs actually change
+  const itemIds = useMemo(() => jobs.map((job) => job.id), [jobs]);
+
   return (
     <div
       ref={setNodeRef}
@@ -74,10 +78,7 @@ function DroppableColumn({
         </Button>
       </div>
       <div className="flex-1 space-y-2 px-4 pb-4 transition-colors">
-        <SortableContext
-          items={jobs.map((job) => job.id)}
-          strategy={verticalListSortingStrategy}
-        >
+        <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
           {jobs.map((job) => (
             <JobCard key={job.id} job={job} onClick={onJobClick} />
           ))}

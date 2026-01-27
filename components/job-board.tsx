@@ -54,11 +54,9 @@ export function JobBoard({ jobs: initialJobs }: JobBoardProps) {
   const [isMounted, setIsMounted] = useState(false);
 
   // Track the target position during drag - this is updated in handleDragOver
-  // and used in handleDragEnd to determine where to place the item
+  // We only need this for cross-column moves to make the ghost appear in the right column
   const dragTargetRef = useRef<{
     status: JobStatus;
-    overItemId: number | null; // null means end of column
-    insertAfter: boolean; // true = insert after overItem, false = insert before
   } | null>(null);
 
   // Only render DnD on client to avoid hydration mismatch
@@ -161,8 +159,7 @@ export function JobBoard({ jobs: initialJobs }: JobBoardProps) {
   }
 
   // Handler for drag over events
-  // 1. Moves items between columns (status change) so ghost appears in right column
-  // 2. Tracks the target position in a ref for use in handleDragEnd
+  // Moves items between columns (status change) so ghost appears in right column
   function handleDragOver(event: DragOverEvent) {
     const { active, over } = event;
 
@@ -172,39 +169,18 @@ export function JobBoard({ jobs: initialJobs }: JobBoardProps) {
     const activeJob = jobs.find((j) => j.id === activeId);
     if (!activeJob) return;
 
-    // Determine target column and position
+    // Determine target column
     let overStatus: JobStatus;
-    let overItemId: number | null = null;
-    let insertAfter = false;
-
     if (isColumnId(over.id)) {
       overStatus = over.id;
-      overItemId = null; // End of column
-      insertAfter = false; // Doesn't matter for column drops
     } else {
-      overItemId = Number(over.id);
-      const overJob = jobs.find((j) => j.id === overItemId);
+      const overJob = jobs.find((j) => j.id === Number(over.id));
       if (!overJob) return;
       overStatus = overJob.status;
-
-      // Determine if we should insert before or after the over item
-      // For within-column: compare positions
-      if (activeJob.status === overStatus) {
-        // Within same column - check if moving down or up by comparing order values
-        insertAfter = activeJob.order < overJob.order; // Moving down = insert after
-      } else {
-        // Cross-column: Check if overJob is the last item in its column
-        // If so, user probably wants to insert after it (at the end)
-        const columnJobs = getSortedJobsForStatus(overStatus, jobs);
-        const isLastInColumn =
-          columnJobs.length > 0 &&
-          columnJobs[columnJobs.length - 1].id === overJob.id;
-        insertAfter = isLastInColumn;
-      }
     }
 
-    // Update the target ref - this is what we'll use in handleDragEnd
-    dragTargetRef.current = { status: overStatus, overItemId, insertAfter };
+    // Track the target status for handleDragEnd
+    dragTargetRef.current = { status: overStatus };
 
     // If moving to a different column, update status so ghost appears there
     if (activeJob.status !== overStatus) {
@@ -315,110 +291,66 @@ export function JobBoard({ jobs: initialJobs }: JobBoardProps) {
     //   })),
     // });
 
-    console.log(
-      "COLUMN JOBS (without active):",
-      columnJobsWithoutActive.map((j) => j.order)
-    );
+    // Get the target index from dnd-kit's sortable data
+    // This is where the ghost appears - the source of truth!
+    // NOTE: sortable.index appears to be an internal implementation detail, not a documented API.
+    // It works reliably but may break in future dnd-kit versions.
+    // Alternative: use items.indexOf(over.id) pattern from official examples.
+    // TODO: Consider refactoring to use documented API if this breaks.
+    const sortableData = over.data.current?.sortable;
+    const targetIndex = sortableData?.index;
 
-    // Calculate the new order value based on where we dropped
-    // Note: We use dragTargetRef which was set in handleDragOver
+    console.log("DROP POSITION:", {
+      targetStatus,
+      targetIndex,
+      columnJobsCount: columnJobsWithoutActive.length,
+    });
+
+    // Calculate the new order value based on the target index
     let newOrder: string;
 
-    if (isColumnId(overId)) {
-      // Dropped on column background = insert at end
+    if (
+      targetIndex === undefined ||
+      targetIndex === null ||
+      columnJobsWithoutActive.length === 0
+    ) {
+      // No sortable data or empty column - insert at end
       if (columnJobsWithoutActive.length === 0) {
         newOrder = calculateOrderBetween(null, null);
-        console.log("Empty column, newOrder:", newOrder);
+        console.log("Empty column");
       } else {
         newOrder = calculateOrderAtEnd(
           columnJobsWithoutActive[columnJobsWithoutActive.length - 1].order
         );
-        console.log(
-          "Insert at END, after:",
-          columnJobsWithoutActive[columnJobsWithoutActive.length - 1].order,
-          "newOrder:",
-          newOrder
-        );
+        console.log("No index, inserting at end");
       }
+    } else if (targetIndex <= 0) {
+      // Insert at start
+      newOrder = calculateOrderAtStart(columnJobsWithoutActive[0].order);
+      console.log("Insert at START (index 0)");
+    } else if (targetIndex >= columnJobsWithoutActive.length) {
+      // Insert at end
+      newOrder = calculateOrderAtEnd(
+        columnJobsWithoutActive[columnJobsWithoutActive.length - 1].order
+      );
+      console.log("Insert at END (index >= length)");
     } else {
-      // Dropped on a specific card - insert BEFORE it
-      const overJobId = Number(overId);
-      const overJob = jobs.find((j) => j.id === overJobId);
+      // Insert between two items
+      const beforeJob = columnJobsWithoutActive[targetIndex - 1];
+      const afterJob = columnJobsWithoutActive[targetIndex];
 
-      if (!overJob) {
-        console.log("Over job NOT FOUND, defaulting to end");
-        // Shouldn't happen, but fallback to end
-        newOrder =
-          columnJobsWithoutActive.length > 0
-            ? calculateOrderAtEnd(
-                columnJobsWithoutActive[columnJobsWithoutActive.length - 1]
-                  .order
-              )
-            : calculateOrderBetween(null, null);
+      console.log("Insert BETWEEN:", {
+        targetIndex,
+        beforeOrder: beforeJob.order,
+        afterOrder: afterJob.order,
+      });
+
+      // Handle edge case: if both jobs have the same order
+      if (beforeJob.order >= afterJob.order) {
+        newOrder = calculateOrderAtStart(afterJob.order);
+        console.log("Orders equal/reversed, using start of after");
       } else {
-        // Check if we should insert before or after (tracked from handleDragOver)
-        const insertAfter = dragTargetRef.current?.insertAfter ?? false;
-
-        console.log("Dropped on CARD:", {
-          overJobId,
-          overJob: overJob.company,
-          overJobOrder: overJob.order,
-          insertAfter,
-        });
-
-        if (insertAfter) {
-          // Insert AFTER the over item
-          const jobsAfterOver = columnJobsWithoutActive.filter(
-            (j) => j.order > overJob.order
-          );
-
-          if (jobsAfterOver.length === 0) {
-            // No jobs after = insert at end
-            newOrder = calculateOrderAtEnd(overJob.order);
-            console.log("Insert AFTER (at end):", overJob.order);
-          } else {
-            // Insert between overJob and the next job
-            const afterJob = jobsAfterOver[0];
-            console.log(
-              "Insert BETWEEN:",
-              overJob.order,
-              "and",
-              afterJob.order
-            );
-
-            if (overJob.order >= afterJob.order) {
-              newOrder = calculateOrderAtEnd(overJob.order);
-            } else {
-              newOrder = calculateOrderBetween(overJob.order, afterJob.order);
-            }
-          }
-        } else {
-          // Insert BEFORE the over item
-          const jobsBeforeOver = columnJobsWithoutActive.filter(
-            (j) => j.order < overJob.order
-          );
-
-          if (jobsBeforeOver.length === 0) {
-            // No jobs before = insert at start
-            newOrder = calculateOrderAtStart(overJob.order);
-            console.log("Insert BEFORE (at start):", overJob.order);
-          } else {
-            // Insert between the last job before and the overJob
-            const beforeJob = jobsBeforeOver[jobsBeforeOver.length - 1];
-            console.log(
-              "Insert BETWEEN:",
-              beforeJob.order,
-              "and",
-              overJob.order
-            );
-
-            if (beforeJob.order >= overJob.order) {
-              newOrder = calculateOrderAtStart(overJob.order);
-            } else {
-              newOrder = calculateOrderBetween(beforeJob.order, overJob.order);
-            }
-          }
-        }
+        newOrder = calculateOrderBetween(beforeJob.order, afterJob.order);
       }
     }
 
