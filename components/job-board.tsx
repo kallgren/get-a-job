@@ -151,11 +151,6 @@ export function JobBoard({ jobs: initialJobs }: JobBoardProps) {
       setActiveJob(job);
     }
 
-    console.log("DRAG START:", {
-      activeId: event.active.id,
-      company: job?.company,
-      order: job?.order,
-    });
   }
 
   // Handler for drag over events
@@ -217,14 +212,6 @@ export function JobBoard({ jobs: initialJobs }: JobBoardProps) {
   async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
 
-    // console.log("DROP EVENT:", {
-    //   activeId: active.id,
-    //   overId: over?.id,
-    //   overData: over?.data?.current,
-    //   activeData: active.data?.current,
-    //   dragTargetRef: dragTargetRef.current,
-    // });
-
     // If drag was cancelled (dropped outside valid area), revert any status changes
     // made by handleDragOver and reset activeJob
     if (!over) {
@@ -282,15 +269,6 @@ export function JobBoard({ jobs: initialJobs }: JobBoardProps) {
       jobs
     ).filter((j) => j.id !== jobId);
 
-    // console.log("COLUMN JOBS (without active):", {
-    //   targetStatus,
-    //   jobs: columnJobsWithoutActive.map((j) => ({
-    //     id: j.id,
-    //     company: j.company,
-    //     order: j.order,
-    //   })),
-    // });
-
     // Get the target index from dnd-kit's sortable data
     // This is where the ghost appears - the source of truth!
     // NOTE: sortable.index appears to be an internal implementation detail, not a documented API.
@@ -299,12 +277,6 @@ export function JobBoard({ jobs: initialJobs }: JobBoardProps) {
     // TODO: Consider refactoring to use documented API if this breaks.
     const sortableData = over.data.current?.sortable;
     const targetIndex = sortableData?.index;
-
-    console.log("DROP POSITION:", {
-      targetStatus,
-      targetIndex,
-      columnJobsCount: columnJobsWithoutActive.length,
-    });
 
     // Calculate the new order value based on the target index
     let newOrder: string;
@@ -317,38 +289,27 @@ export function JobBoard({ jobs: initialJobs }: JobBoardProps) {
       // No sortable data or empty column - insert at end
       if (columnJobsWithoutActive.length === 0) {
         newOrder = calculateOrderBetween(null, null);
-        console.log("Empty column");
       } else {
         newOrder = calculateOrderAtEnd(
           columnJobsWithoutActive[columnJobsWithoutActive.length - 1].order
         );
-        console.log("No index, inserting at end");
       }
     } else if (targetIndex <= 0) {
       // Insert at start
       newOrder = calculateOrderAtStart(columnJobsWithoutActive[0].order);
-      console.log("Insert at START (index 0)");
     } else if (targetIndex >= columnJobsWithoutActive.length) {
       // Insert at end
       newOrder = calculateOrderAtEnd(
         columnJobsWithoutActive[columnJobsWithoutActive.length - 1].order
       );
-      console.log("Insert at END (index >= length)");
     } else {
       // Insert between two items
       const beforeJob = columnJobsWithoutActive[targetIndex - 1];
       const afterJob = columnJobsWithoutActive[targetIndex];
 
-      console.log("Insert BETWEEN:", {
-        targetIndex,
-        beforeOrder: beforeJob.order,
-        afterOrder: afterJob.order,
-      });
-
       // Handle edge case: if both jobs have the same order
       if (beforeJob.order >= afterJob.order) {
         newOrder = calculateOrderAtStart(afterJob.order);
-        console.log("Orders equal/reversed, using start of after");
       } else {
         newOrder = calculateOrderBetween(beforeJob.order, afterJob.order);
       }
