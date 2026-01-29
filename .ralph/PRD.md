@@ -90,7 +90,7 @@ Hotkey hints appear as a boxed monospace letter alongside the button text:
       "Pressing 'x' while focused in an input does nothing",
       "Export behavior is identical to clicking the export button"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "HK-005",
@@ -124,7 +124,7 @@ Hotkey hints appear as a boxed monospace letter alongside the button text:
       "Hint is always visible (not just on hover)",
       "Hint does not break the existing layout"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "HK-008",

@@ -47,3 +47,20 @@
   - Test 'D' (uppercase) key cycles theme
   - Test 'd' key does nothing when input is focused
 
+20260129 08:25:31 - HK-004 (Feature) DONE, HK-007 (UI) DONE
+  Wired up 'x' hotkey for export/import modal in app/_components/header-actions.tsx
+  - Added useHotkey hook to register 'x' key
+  - Added HotkeyHint component to display [X] alongside export button
+  - Wrapped button in flex container to position hint next to icon button
+  - Extracted openExportImport handler for reuse by both click and hotkey
+
+  Created new test file app/_components/header-actions.test.tsx (6 tests)
+  - Test export/import button renders
+  - Test hotkey hint [X] is displayed
+  - Test clicking button opens modal
+  - Test 'x' key opens modal
+  - Test 'X' (uppercase) key opens modal
+  - Test 'x' key does nothing when input is focused
+
+  Commit: 0755c9f
+
