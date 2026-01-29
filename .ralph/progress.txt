@@ -1,0 +1,35 @@
+20260129 07:38:52 - HK-001 (Infrastructure) DONE
+  Created useHotkey hook in lib/useHotkey.ts
+  - Registers keydown listener on mount
+  - Cleans up listener on unmount
+  - Ignores events in input/textarea/contenteditable
+  - Case-insensitive key matching
+  - Ignores Ctrl/Meta/Alt modifiers
+
+  HK-010 (Testing) DONE
+  Created comprehensive unit tests in lib/useHotkey.test.ts (17 tests)
+  - Basic key press detection
+  - Case insensitivity
+  - Input field detection
+  - Modifier key handling
+  - Cleanup on unmount
+
+  Commit: a1a36de
+
+20260129 08:19:30 - HK-002 (Infrastructure) DONE
+  Created HotkeyHint component in components/ui/hotkey-hint.tsx
+  - Renders single character in a boxed badge style
+  - Uses monospace font (font-mono)
+  - Styled with shadcn/ui CSS variables (border, bg-muted, text-muted-foreground)
+  - Uppercase normalization for consistent display
+  - Accepts className and HTML attributes for flexibility
+
+  HK-011 (Testing) DONE
+  Created component tests in components/ui/hotkey-hint.test.tsx (7 tests)
+  - Renders correct character
+  - Uppercase normalization
+  - Screen reader text accessibility
+  - aria-hidden attribute
+  - Custom className support
+  - HTML attribute passthrough
+
