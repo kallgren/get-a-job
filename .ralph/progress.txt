@@ -64,3 +64,27 @@
 
   Commit: 0755c9f
 
+20260129 08:28:51 - HK-005 (Feature) DONE, HK-008 (UI) DONE
+  Wired up 'a' hotkey for add job to wishlist in components/job-board.tsx
+  - Added useHotkey hook to register 'a' key
+  - Created handleAddToWishlist callback that triggers handleNewJob("WISHLIST")
+  - Used useCallback for stable function references
+
+  Added HotkeyHint [A] to Wishlist column in components/board-view.tsx
+  - Imported HotkeyHint component
+  - Added hint next to the Wishlist column's add button only
+  - Wrapped button in flex container for proper positioning
+
+  Created new test file components/job-board.test.tsx (4 tests)
+  - Test board view renders
+  - Test 'a' key opens modal with WISHLIST status
+  - Test 'A' (uppercase) key opens modal with WISHLIST status
+  - Test 'a' key does nothing when input is focused
+
+  Created new test file components/board-view.test.tsx (3 tests)
+  - Test all status columns render
+  - Test hotkey hint [A] appears only on Wishlist column
+  - Test add buttons exist for all columns
+
+  Commit: 04c64f2
+

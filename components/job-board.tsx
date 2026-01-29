@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Job, JobStatus } from "@prisma/client";
 import {
   DndContext,
@@ -16,6 +16,7 @@ import { BoardView } from "@/components/board-view";
 import { JobModal } from "@/components/job-modal";
 import { JobCard } from "@/components/job-card";
 import { toast } from "sonner";
+import { useHotkey } from "@/lib/useHotkey";
 import type { ExtractedJobData } from "@/lib/schemas";
 
 interface JobBoardProps {
@@ -56,11 +57,23 @@ export function JobBoard({ jobs: initialJobs }: JobBoardProps) {
     })
   );
 
-  function handleNewJob(status: JobStatus) {
+  // Handler to open add job modal for a given status
+  const handleNewJob = useCallback((status: JobStatus) => {
     setSelectedJob(undefined);
     setInitialStatus(status);
     setIsModalOpen(true);
-  }
+  }, []);
+
+  // Handler specifically for the 'a' hotkey - adds to wishlist
+  const handleAddToWishlist = useCallback(() => {
+    handleNewJob("WISHLIST");
+  }, [handleNewJob]);
+
+  // Register 'a' hotkey for adding job to wishlist
+  useHotkey({
+    key: "a",
+    onPress: handleAddToWishlist,
+  });
 
   function handleJobClick(job: Job) {
     setSelectedJob(job);

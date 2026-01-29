@@ -102,7 +102,7 @@ Hotkey hints appear as a boxed monospace letter alongside the button text:
       "Pressing 'a' while focused in an input does nothing",
       "Behavior is identical to clicking the add job button"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "HK-006",
@@ -135,7 +135,7 @@ Hotkey hints appear as a boxed monospace letter alongside the button text:
       "Hint is always visible (not just on hover)",
       "Hint does not break the existing layout"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "HK-009",
