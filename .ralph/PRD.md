@@ -145,7 +145,7 @@ Hotkey hints appear as a boxed monospace letter alongside the button text:
       "Hints have appropriate aria-label or sr-only text explaining the shortcut",
       "Screen reader announces 'keyboard shortcut D' or similar"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "HK-010",

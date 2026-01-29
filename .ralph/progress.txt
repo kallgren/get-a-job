@@ -88,3 +88,14 @@
 
   Commit: 04c64f2
 
+20260129 08:31:18 - HK-009 (Accessibility) DONE
+  Fixed HotkeyHint component screen reader accessibility
+  - Problem: sr-only text was inside aria-hidden span, so screen readers couldn't access it
+  - Solution: Moved sr-only text outside the aria-hidden badge element using React fragment
+  - Screen readers now properly announce "keyboard shortcut D" (or X, A) for each hint
+
+  Updated HotkeyHint tests (8 tests total)
+  - Added test verifying sr-only text is NOT inside an aria-hidden parent
+  - Updated existing tests to select visible badge by aria-hidden attribute
+  - All tests verify the correct accessibility structure
+

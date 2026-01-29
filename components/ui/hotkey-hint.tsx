@@ -17,21 +17,25 @@ function HotkeyHint({ hotkey, className, ...props }: HotkeyHintProps) {
   const displayKey = hotkey.toUpperCase();
 
   return (
-    <span
-      className={cn(
-        "inline-flex items-center justify-center",
-        "h-5 min-w-5 px-1",
-        "rounded border border-border bg-muted",
-        "font-mono text-xs text-muted-foreground",
-        "select-none",
-        className
-      )}
-      aria-hidden="true"
-      {...props}
-    >
-      {displayKey}
+    <>
+      {/* Screen reader announcement - outside aria-hidden so it's announced */}
       <span className="sr-only">keyboard shortcut {displayKey}</span>
-    </span>
+      {/* Visual hint - hidden from screen readers to avoid duplication */}
+      <span
+        className={cn(
+          "inline-flex items-center justify-center",
+          "h-5 min-w-5 px-1",
+          "rounded border border-border bg-muted",
+          "font-mono text-xs text-muted-foreground",
+          "select-none",
+          className
+        )}
+        aria-hidden="true"
+        {...props}
+      >
+        {displayKey}
+      </span>
+    </>
   );
 }
 
