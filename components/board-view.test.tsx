@@ -16,13 +16,7 @@ describe("BoardView", () => {
   });
 
   it("renders all status columns", () => {
-    render(
-      <BoardView
-        jobs={[]}
-        onJobClick={vi.fn()}
-        onAddClick={vi.fn()}
-      />
-    );
+    render(<BoardView jobs={[]} onJobClick={vi.fn()} onAddClick={vi.fn()} />);
 
     expect(screen.getByText("Wishlist")).toBeInTheDocument();
     expect(screen.getByText("Applied")).toBeInTheDocument();
@@ -33,13 +27,7 @@ describe("BoardView", () => {
   });
 
   it("displays hotkey hint [A] only on the Wishlist column", () => {
-    render(
-      <BoardView
-        jobs={[]}
-        onJobClick={vi.fn()}
-        onAddClick={vi.fn()}
-      />
-    );
+    render(<BoardView jobs={[]} onJobClick={vi.fn()} onAddClick={vi.fn()} />);
 
     // The hint should display uppercase "A"
     const hints = screen.getAllByText("A");
@@ -48,13 +36,7 @@ describe("BoardView", () => {
   });
 
   it("has an add button for each column", () => {
-    render(
-      <BoardView
-        jobs={[]}
-        onJobClick={vi.fn()}
-        onAddClick={vi.fn()}
-      />
-    );
+    render(<BoardView jobs={[]} onJobClick={vi.fn()} onAddClick={vi.fn()} />);
 
     expect(
       screen.getByRole("button", { name: "Add job to Wishlist" })

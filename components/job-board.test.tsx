@@ -22,7 +22,6 @@ vi.mock("sonner", () => ({
 }));
 
 // Mock JobModal to track when it opens and with what props
-const mockJobModalOnOpenChange = vi.fn();
 vi.mock("@/components/job-modal", () => ({
   JobModal: ({
     open,

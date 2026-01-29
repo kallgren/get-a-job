@@ -99,3 +99,21 @@
   - Updated existing tests to select visible badge by aria-hidden attribute
   - All tests verify the correct accessibility structure
 
+20260129 08:38:01 - HK-012 (Testing) DONE
+  Created E2E test file e2e/hotkeys.spec.ts (11 tests)
+  - Theme toggle hotkey:
+    - Test 'd' cycles theme (checks dark class on html element)
+    - Test 'D' (Shift+d) also works
+  - Add job hotkey:
+    - Test 'a' opens add job modal with Wishlist status pre-selected
+    - Test 'A' (Shift+a) also opens modal
+  - Export/import hotkey:
+    - Test 'x' opens export/import modal
+    - Test 'X' (Shift+x) also opens modal
+  - Hotkeys disabled in input fields:
+    - Test 'd' doesn't toggle theme when focused in input
+    - Test 'a' doesn't open second modal when typing in input
+    - Test 'x' doesn't open export modal when textarea is focused
+  - Hotkey hints visibility:
+    - Test D, X, A hints are visible on page
+

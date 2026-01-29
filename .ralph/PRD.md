@@ -177,7 +177,7 @@ Hotkey hints appear as a boxed monospace letter alongside the button text:
       "Test pressing 'a' opens add job flow",
       "Test hotkeys don't fire when typing in search/input"
     ],
-    "passes": false
+    "passes": true
   }
 ]
 ```
