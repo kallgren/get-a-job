@@ -54,7 +54,7 @@ Hotkey hints appear as a boxed monospace letter alongside the button text:
       "The listener is cleaned up on unmount",
       "Events are ignored when activeElement is an input, textarea, or contenteditable"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "HK-002",
@@ -78,7 +78,7 @@ Hotkey hints appear as a boxed monospace letter alongside the button text:
       "Pressing 'd' while focused in an input does nothing",
       "The theme persists after toggle (existing behavior maintained)"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "HK-004",
@@ -113,7 +113,7 @@ Hotkey hints appear as a boxed monospace letter alongside the button text:
       "Hint is always visible (not just on hover)",
       "Hint does not break the existing layout"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "HK-007",
@@ -156,7 +156,7 @@ Hotkey hints appear as a boxed monospace letter alongside the button text:
       "Test that hotkeys are ignored when in input fields",
       "Test cleanup on unmount"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "HK-011",

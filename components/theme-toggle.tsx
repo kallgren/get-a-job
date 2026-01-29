@@ -3,6 +3,8 @@
 import { Moon, Sun, Monitor } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
+import { HotkeyHint } from "@/components/ui/hotkey-hint";
+import { useHotkey } from "@/lib/useHotkey";
 import { useEffect, useState } from "react";
 
 export function ThemeToggle() {
@@ -20,6 +22,12 @@ export function ThemeToggle() {
     else if (theme === "dark") setTheme("system");
     else setTheme("light");
   };
+
+  // Register 'd' hotkey for theme toggle
+  useHotkey({
+    key: "d",
+    onPress: cycleTheme,
+  });
 
   const getIcon = () => {
     if (theme === "light") return <Sun className="h-4 w-4" />;
@@ -41,21 +49,27 @@ export function ThemeToggle() {
   // Return a placeholder button during SSR to prevent hydration mismatch
   if (!mounted) {
     return (
-      <Button variant="ghost" size="icon" aria-label="Toggle theme">
-        <Monitor className="h-4 w-4" />
-      </Button>
+      <div className="flex items-center gap-1">
+        <Button variant="ghost" size="icon" aria-label="Toggle theme">
+          <Monitor className="h-4 w-4" />
+        </Button>
+        <HotkeyHint hotkey="d" />
+      </div>
     );
   }
 
   return (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={cycleTheme}
-      aria-label={getLabel()}
-      title={getLabel()}
-    >
-      {getIcon()}
-    </Button>
+    <div className="flex items-center gap-1">
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={cycleTheme}
+        aria-label={getLabel()}
+        title={getLabel()}
+      >
+        {getIcon()}
+      </Button>
+      <HotkeyHint hotkey="d" />
+    </div>
   );
 }

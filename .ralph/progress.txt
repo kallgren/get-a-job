@@ -33,3 +33,17 @@
   - Custom className support
   - HTML attribute passthrough
 
+  Commit: d838dce
+
+20260129 08:21:57 - HK-003 (Feature) DONE, HK-006 (UI) DONE
+  Wired up 'd' hotkey for theme toggle in components/theme-toggle.tsx
+  - Added useHotkey hook to register 'd' key
+  - Added HotkeyHint component to display [D] alongside toggle button
+  - Wrapped button in flex container to position hint next to icon button
+
+  Added 4 new tests to components/theme-toggle.test.tsx (14 tests total)
+  - Test hotkey hint [D] is displayed
+  - Test 'd' key cycles theme
+  - Test 'D' (uppercase) key cycles theme
+  - Test 'd' key does nothing when input is focused
+
