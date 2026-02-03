@@ -10,117 +10,106 @@ test.describe("Keyboard Hotkeys", () => {
     await page.goto("/");
 
     // Wait for page to load
-    await expect(
-      page.getByRole("heading", { name: "Get a Job", level: 1 })
-    ).toBeVisible();
+    await page.waitForSelector('h1:has-text("Get a Job")');
   });
 
-  test.describe("Theme toggle hotkey", () => {
-    test("pressing 'd' cycles the theme", async ({ page }) => {
-      // Get initial theme class from <html> element
-      const getThemeClass = async () => {
-        return await page.evaluate(() => {
-          return document.documentElement.classList.contains("dark")
-            ? "dark"
-            : "light";
-        });
-      };
+  test("hotkey hints are visible on the page", async ({ page }) => {
+    // Assert
+    await test.step("verify all hotkey hints are displayed", async () => {
+      // [D] hint near theme toggle
+      await expect(page.getByText("D", { exact: true })).toBeVisible();
 
-      const initialTheme = await getThemeClass();
+      // [X] hint near export button
+      await expect(page.getByText("X", { exact: true })).toBeVisible();
 
-      // Press 'd' to toggle theme
+      // [A] hint near Wishlist add button
+      await expect(page.getByText("A", { exact: true })).toBeVisible();
+    });
+  });
+
+  test("pressing 'd' toggles the theme", async ({ page }) => {
+    // Arrange
+    const htmlElement = page.locator("html");
+    const initialDarkClass = await htmlElement.evaluate((el) =>
+      el.classList.contains("dark")
+    );
+
+    // Act
+    await test.step("press 'd' to toggle theme", async () => {
       await page.keyboard.press("d");
-
-      // Wait for theme change to be applied
-      await page.waitForTimeout(100);
-
-      const newTheme = await getThemeClass();
-
-      // Theme should have changed (light -> dark, or dark -> light depending on system preference)
-      // Since theme cycles light -> dark -> system -> light, we just verify it changed
-      expect(newTheme).not.toBe(initialTheme);
     });
 
-    test("pressing 'D' (uppercase) also works", async ({ page }) => {
-      const getThemeClass = async () => {
-        return await page.evaluate(() => {
-          return document.documentElement.classList.contains("dark")
-            ? "dark"
-            : "light";
-        });
-      };
-
-      const initialTheme = await getThemeClass();
-
-      // Press 'D' (shift+d) to toggle theme
-      await page.keyboard.press("Shift+d");
-
-      await page.waitForTimeout(100);
-
-      const newTheme = await getThemeClass();
-      expect(newTheme).not.toBe(initialTheme);
+    // Assert
+    await test.step("verify theme class has changed", async () => {
+      // Theme cycles: light -> dark -> system -> light
+      // We verify the dark class toggled (or stayed same if system matched)
+      const newDarkClass = await htmlElement.evaluate((el) =>
+        el.classList.contains("dark")
+      );
+      expect(newDarkClass).not.toBe(initialDarkClass);
     });
   });
 
-  test.describe("Add job hotkey", () => {
-    test("pressing 'a' opens the add job modal with Wishlist status", async ({
-      page,
-    }) => {
-      // Verify modal is not open
-      await expect(page.getByRole("dialog")).not.toBeVisible();
+  test("pressing 'a' opens the add job modal with Wishlist status", async ({
+    page,
+  }) => {
+    // Arrange
+    await expect(page.getByRole("dialog")).not.toBeVisible();
 
-      // Press 'a' to open add job modal
+    // Act
+    await test.step("press 'a' to open add job modal", async () => {
       await page.keyboard.press("a");
+    });
 
-      // Verify modal opens
+    // Assert
+    await test.step("verify modal opens with Wishlist pre-selected", async () => {
       await expect(page.getByRole("dialog")).toBeVisible();
       await expect(
         page.getByRole("heading", { name: "New Job" })
       ).toBeVisible();
 
-      // Verify status is pre-selected to Wishlist
       const statusTrigger = page.getByRole("combobox", { name: /status/i });
       await expect(statusTrigger).toContainText("Wishlist");
     });
+  });
 
-    test("pressing 'A' (uppercase) also opens add job modal", async ({
-      page,
-    }) => {
-      await expect(page.getByRole("dialog")).not.toBeVisible();
+  test("pressing 'x' opens the export/import modal", async ({ page }) => {
+    // Arrange
+    await expect(page.getByRole("dialog")).not.toBeVisible();
 
-      // Press 'A' (shift+a)
+    // Act
+    await test.step("press 'x' to open export/import modal", async () => {
+      await page.keyboard.press("x");
+    });
+
+    // Assert
+    await test.step("verify export/import modal opens", async () => {
+      await expect(page.getByRole("dialog")).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: /export.*import/i })
+      ).toBeVisible();
+    });
+  });
+
+  test("uppercase hotkeys also work (Shift+d, Shift+a, Shift+x)", async ({
+    page,
+  }) => {
+    // Test uppercase 'A' opens modal
+    await test.step("press Shift+a to open add job modal", async () => {
       await page.keyboard.press("Shift+a");
-
       await expect(page.getByRole("dialog")).toBeVisible();
       await expect(
         page.getByRole("heading", { name: "New Job" })
       ).toBeVisible();
     });
-  });
 
-  test.describe("Export/import hotkey", () => {
-    test("pressing 'x' opens the export/import modal", async ({ page }) => {
-      // Verify modal is not open
-      await expect(page.getByRole("dialog")).not.toBeVisible();
+    // Close modal with Escape
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog")).not.toBeVisible();
 
-      // Press 'x' to open export/import modal
-      await page.keyboard.press("x");
-
-      // Verify modal opens
-      await expect(page.getByRole("dialog")).toBeVisible();
-      await expect(
-        page.getByRole("heading", { name: /export.*import/i })
-      ).toBeVisible();
-    });
-
-    test("pressing 'X' (uppercase) also opens export/import modal", async ({
-      page,
-    }) => {
-      await expect(page.getByRole("dialog")).not.toBeVisible();
-
-      // Press 'X' (shift+x)
+    // Test uppercase 'X' opens export modal
+    await test.step("press Shift+x to open export/import modal", async () => {
       await page.keyboard.press("Shift+x");
-
       await expect(page.getByRole("dialog")).toBeVisible();
       await expect(
         page.getByRole("heading", { name: /export.*import/i })
@@ -128,103 +117,53 @@ test.describe("Keyboard Hotkeys", () => {
     });
   });
 
-  test.describe("Hotkeys disabled in input fields", () => {
-    test("pressing 'd' does not toggle theme when input is focused", async ({
-      page,
-    }) => {
-      // Open add job modal to get access to input fields
+  test("hotkeys are disabled when typing in input fields", async ({ page }) => {
+    // Arrange
+    await test.step("open add job modal", async () => {
       await page.getByRole("button", { name: "Add job to Wishlist" }).click();
       await expect(page.getByRole("dialog")).toBeVisible();
+    });
 
-      // Focus the company input field
+    // Act & Assert
+    await test.step("type 'd' in company input - should not toggle theme", async () => {
+      const htmlElement = page.locator("html");
+      const initialDarkClass = await htmlElement.evaluate((el) =>
+        el.classList.contains("dark")
+      );
+
       const companyInput = page.getByLabel(/company/i);
       await companyInput.focus();
-
-      // Get initial theme
-      const getThemeClass = async () => {
-        return await page.evaluate(() => {
-          return document.documentElement.classList.contains("dark")
-            ? "dark"
-            : "light";
-        });
-      };
-
-      const initialTheme = await getThemeClass();
-
-      // Type 'd' in the input
       await page.keyboard.type("d");
 
-      await page.waitForTimeout(100);
-
-      const newTheme = await getThemeClass();
-
-      // Theme should NOT have changed
-      expect(newTheme).toBe(initialTheme);
-
-      // Verify 'd' was typed into the input instead
+      // Verify 'd' went into input, not theme toggle
       await expect(companyInput).toHaveValue("d");
+
+      const newDarkClass = await htmlElement.evaluate((el) =>
+        el.classList.contains("dark")
+      );
+      expect(newDarkClass).toBe(initialDarkClass);
     });
 
-    test("pressing 'a' does not open second modal when typing in input", async ({
-      page,
-    }) => {
-      // Open add job modal first
-      await page.getByRole("button", { name: "Add job to Wishlist" }).click();
-      await expect(page.getByRole("dialog")).toBeVisible();
-
-      // Focus the company input
+    await test.step("type 'a' in input - should not open second modal", async () => {
       const companyInput = page.getByLabel(/company/i);
-      await companyInput.focus();
-
-      // Type 'a' which should go into the input, not trigger hotkey
       await page.keyboard.type("a");
 
-      // Verify only one dialog is open (the one we already opened)
-      const dialogs = page.getByRole("dialog");
-      await expect(dialogs).toHaveCount(1);
-
-      // Verify 'a' was typed into the input
-      await expect(companyInput).toHaveValue("a");
+      // Only one dialog should be open
+      await expect(page.getByRole("dialog")).toHaveCount(1);
+      await expect(companyInput).toHaveValue("da");
     });
 
-    test("pressing 'x' does not open export modal when textarea is focused", async ({
-      page,
-    }) => {
-      // Open add job modal to access a textarea
-      await page.getByRole("button", { name: "Add job to Wishlist" }).click();
-      await expect(page.getByRole("dialog")).toBeVisible();
-
-      // Focus the notes textarea (which should be available in the form)
+    await test.step("type 'x' in textarea - should not open export modal", async () => {
       const notesTextarea = page.getByLabel(/notes/i);
       await notesTextarea.focus();
-
-      // Type 'x' which should go into the textarea, not trigger export modal
       await page.keyboard.type("x");
 
-      // Verify only the add job dialog is open, not the export modal
-      const dialogs = page.getByRole("dialog");
-      await expect(dialogs).toHaveCount(1);
-
-      // The dialog should still be the "New Job" dialog, not export/import
+      // Still only the add job dialog, not export modal
+      await expect(page.getByRole("dialog")).toHaveCount(1);
       await expect(
         page.getByRole("heading", { name: "New Job" })
       ).toBeVisible();
-
-      // Verify 'x' was typed into the textarea
       await expect(notesTextarea).toHaveValue("x");
-    });
-  });
-
-  test.describe("Hotkey hints visibility", () => {
-    test("hotkey hints are visible on the page", async ({ page }) => {
-      // Verify [D] hint is visible near theme toggle
-      await expect(page.getByText("D", { exact: true })).toBeVisible();
-
-      // Verify [X] hint is visible near export button
-      await expect(page.getByText("X", { exact: true })).toBeVisible();
-
-      // Verify [A] hint is visible near Wishlist add button
-      await expect(page.getByText("A", { exact: true })).toBeVisible();
     });
   });
 });

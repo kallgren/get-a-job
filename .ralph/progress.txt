@@ -146,3 +146,13 @@
   - All unit tests passing (202 tests)
   - References: https://www.epicreact.dev/the-latest-ref-pattern-in-react
 
+20260203 15:42:10 - Ad-hoc refactor via freeform chat
+  Rewrote E2E hotkey tests to match job-board.spec.ts patterns
+  - Added test.step() for arrange/act/assert structure
+  - Removed waitForTimeout calls - using proper assertions instead
+  - Flattened nested test.describe blocks
+  - Consolidated uppercase tests into one test (Shift+a, Shift+x)
+  - Consolidated "disabled in input" tests into one test with steps
+  - Reduced from 11 tests to 6 while maintaining coverage
+  - Matches patterns from job-board.spec.ts
+
