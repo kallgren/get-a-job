@@ -74,7 +74,7 @@ export function JobBoard({ jobs: initialJobs }: JobBoardProps) {
       setSelectedJob(undefined);
       setInitialStatus(undefined);
       setExtractedJobData(undefined);
-    }, 200);
+    }, 50);
   }
 
   async function handlePasteUrl(url: string) {
