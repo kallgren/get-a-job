@@ -49,27 +49,22 @@ export function ThemeToggle() {
   // Return a placeholder button during SSR to prevent hydration mismatch
   if (!mounted) {
     return (
-      <div className="flex items-center gap-1">
-        <Button variant="ghost" size="icon" aria-label="Toggle theme">
-          <Monitor className="h-4 w-4" />
-        </Button>
+      <Button variant="ghost" aria-label="Toggle theme">
+        <Monitor className="h-4 w-4" />
         <HotkeyHint hotkey="d" />
-      </div>
+      </Button>
     );
   }
 
   return (
-    <div className="flex items-center gap-1">
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={cycleTheme}
-        aria-label={getLabel()}
-        title={getLabel()}
-      >
-        {getIcon()}
-      </Button>
+    <Button
+      variant="ghost"
+      onClick={cycleTheme}
+      aria-label={getLabel()}
+      title={getLabel()}
+    >
+      {getIcon()}
       <HotkeyHint hotkey="d" />
-    </div>
+    </Button>
   );
 }

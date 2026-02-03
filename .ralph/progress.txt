@@ -117,3 +117,14 @@
   - Hotkey hints visibility:
     - Test D, X, A hints are visible on page
 
+20260203 14:16:42 - Ad-hoc fix via freeform chat
+  Moved HotkeyHint components inside clickable button elements
+  - Previously hints were siblings to buttons in flex containers
+  - Now hints are children of their respective buttons
+  - Files changed:
+    - components/theme-toggle.tsx: HotkeyHint now inside Button
+    - app/_components/header-actions.tsx: HotkeyHint now inside Button
+    - components/board-view.tsx: HotkeyHint now inside Button
+  - Removed unnecessary wrapper divs
+  - All unit tests passing (202 tests)
+

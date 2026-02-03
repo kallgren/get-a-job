@@ -27,18 +27,15 @@ export function HeaderActions() {
   return (
     <>
       <div className="flex items-center gap-2">
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={openExportImport}
-            aria-label="Export and import"
-            title="Export and import"
-          >
-            <Download className="h-4 w-4" />
-          </Button>
+        <Button
+          variant="ghost"
+          onClick={openExportImport}
+          aria-label="Export and import"
+          title="Export and import"
+        >
+          <Download className="h-4 w-4" />
           <HotkeyHint hotkey="x" />
-        </div>
+        </Button>
         <ThemeToggle />
         <UserButton />
       </div>

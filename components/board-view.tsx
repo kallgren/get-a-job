@@ -61,17 +61,15 @@ function DroppableColumn({
             </span>
           )}
         </div>
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onAddClick(status.value)}
-            aria-label={`Add job to ${status.label}`}
-          >
-            <PlusIcon className="size-4" />
-          </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onAddClick(status.value)}
+          aria-label={`Add job to ${status.label}`}
+        >
+          <PlusIcon className="size-4" />
           {status.value === "WISHLIST" && <HotkeyHint hotkey="a" />}
-        </div>
+        </Button>
       </div>
       <div className="flex-1 space-y-2 px-4 pb-4 transition-colors">
         {jobs.map((job) => (
