@@ -13,267 +13,230 @@ test.describe("Job Board", () => {
     await page.waitForSelector('h1:has-text("Get a Job")');
   });
 
-  test("should display the job board with status columns", async ({ page }) => {
-    // Verify all status columns are present
-    // Use level: 2 to specifically target h2 column headings (not h3 job card titles)
-    await expect(
-      page.getByRole("heading", { name: "Wishlist", level: 2 })
-    ).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "Applied", level: 2 })
-    ).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "Interview", level: 2 })
-    ).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "Offer", level: 2 })
-    ).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "Accepted", level: 2 })
-    ).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "Rejected", level: 2 })
-    ).toBeVisible();
-  });
-
-  test("should create a new job", async ({ page }) => {
-    // Click the "+" button in the Wishlist column
-    await page.getByRole("button", { name: "Add job to Wishlist" }).click();
-
-    // Verify modal opens
-    await expect(page.getByRole("dialog")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "New Job" })).toBeVisible();
-
-    // Fill in the form
-    await page.getByLabel(/company/i).fill("Acme Corp");
-    await page.getByLabel(/title/i).fill("Senior Developer");
-    await page.getByLabel(/location/i).fill("Stockholm");
-    await page.getByLabel(/job posting url/i).fill("https://jobs.acme.com/123");
-    await page.getByLabel(/date applied/i).fill("2025-12-15");
-
-    // Open status combobox and select option
-    await page.getByLabel(/status/i).click();
-    await page.getByRole("option", { name: "Wishlist" }).click();
-
-    // Submit the form
-    await page.getByRole("button", { name: /add job/i }).click();
-
-    // Verify modal closes
-    await expect(page.getByRole("dialog")).not.toBeVisible();
-
-    // Verify the job card appears in the Wishlist column
-    const wishlistColumn = page
-      .locator("div")
-      .filter({ hasText: /^Wishlist/ })
-      .first();
-    await expect(
-      wishlistColumn.getByText("Acme Corp", { exact: true })
-    ).toBeVisible();
-    await expect(wishlistColumn.getByText("Senior Developer")).toBeVisible();
-
-    // Reopen the job and verify the date was saved correctly
-    await page.getByText("Acme Corp").click();
-    await expect(page.getByRole("dialog")).toBeVisible();
-
-    // Modal opens in view mode - click edit button to see form
-    await page.getByRole("button", { name: "Edit job" }).click();
-    await expect(page.getByLabel(/date applied/i)).toHaveValue("2025-12-15");
-    await page.getByRole("button", { name: /cancel/i }).click();
-  });
-
-  test("should create a job in specific column using column add button", async ({
+  test("creates a new job with all fields in correct column", async ({
     page,
   }) => {
-    // Use unique company name to avoid conflicts with parallel tests
-    const uniqueCompany = `Applied Test ${Date.now()}`;
+    const companyValue = `Acme Corp ${Date.now()}`;
+    const titleValue = "Senior Developer";
+    const locationValue = "Stockholm";
+    const jobPostingUrlValue = "https://jobs.acme.com/123";
+    const jobPostingTextValue = "This is the original job posting text";
+    const notesValue = "These are some personal notes";
+    const contactPersonValue = "Important Person";
+    const resumeUrlValue = "https://drive.google.com/files/resume.pdf";
+    const coverletterUrlValue =
+      "https://drive.google.com/files/coverletter.pdf";
+    const dateAppliedValue = "2025-12-15";
+    const formattedDateAppliedValue = "15/12 2025";
 
-    // Click the "+" button in the Applied column
-    await page.getByRole("button", { name: "Add job to Applied" }).click();
+    // Arrange
+    await test.step('open "add job" modal', async () => {
+      await page.getByRole("button", { name: "Add job to Applied" }).click();
 
-    // Verify modal opens
-    await expect(page.getByRole("dialog")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "New Job" })).toBeVisible();
+      await expect(page.getByRole("dialog")).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: "New Job" })
+      ).toBeVisible();
+    });
 
-    // Fill in the form
-    await page.getByLabel(/company/i).fill(uniqueCompany);
-    await page.getByLabel(/title/i).fill("Backend Engineer");
-    await page.getByLabel(/location/i).fill("Gothenburg");
+    // Act
+    await test.step("fill form and submit", async () => {
+      await page.getByLabel(/company/i).fill(companyValue);
+      await page.getByLabel(/title/i).fill(titleValue);
+      await page.getByLabel(/location/i).fill(locationValue);
+      await page.getByLabel(/job posting url/i).fill(jobPostingUrlValue);
+      await page.getByLabel(/description/i).fill(jobPostingTextValue);
+      await page.getByLabel(/personal notes/i).fill(notesValue);
+      await page.getByLabel(/contact person/i).fill(contactPersonValue);
+      await page.getByLabel(/resume url/i).fill(resumeUrlValue);
+      await page.getByLabel(/cover letter url/i).fill(coverletterUrlValue);
+      await page.getByLabel(/date applied/i).fill(dateAppliedValue);
 
-    // Verify that "Applied" status is pre-selected in the dropdown
-    // The Select component shows the selected value in the trigger button
-    const statusTrigger = page.getByRole("combobox", { name: /status/i });
-    await expect(statusTrigger).toContainText("Applied");
+      const statusTrigger = page.getByRole("combobox", { name: /status/i });
+      await expect(statusTrigger).toContainText("Applied");
 
-    // Submit the form without changing status
-    await page.getByRole("button", { name: /add job/i }).click();
+      await page.getByRole("button", { name: "Add Job" }).click();
+      await expect(page.getByRole("dialog")).not.toBeVisible();
+    });
 
-    // Verify modal closes
-    await expect(page.getByRole("dialog")).not.toBeVisible();
+    // Assert
+    await test.step("verify the job card appears in the correct column", async () => {
+      const appliedColumn = page.getByTestId("column-APPLIED");
+      await expect(
+        appliedColumn.getByText(companyValue, { exact: true })
+      ).toBeVisible();
+      await expect(appliedColumn.getByText(titleValue)).toBeVisible();
 
-    // Verify the job card appears in the Applied column (not Wishlist)
-    const appliedColumn = page.getByTestId("column-APPLIED");
-    await expect(
-      appliedColumn.getByText(uniqueCompany, { exact: true })
-    ).toBeVisible();
-    await expect(appliedColumn.getByText("Backend Engineer")).toBeVisible();
+      const wishlistColumn = page.getByTestId("column-WISHLIST");
+      await expect(
+        wishlistColumn.getByText(companyValue, { exact: true })
+      ).not.toBeVisible();
+    });
 
-    // Verify it's NOT in the Wishlist column
-    const wishlistColumn = page.getByTestId("column-WISHLIST");
-    await expect(
-      wishlistColumn.getByText(uniqueCompany, { exact: true })
-    ).not.toBeVisible();
+    await test.step("reopen the job and verify all the data is displayed", async () => {
+      await page.getByText(companyValue).click();
+      const dialog = page.getByRole("dialog");
+      await expect(dialog).toBeVisible();
+      await expect(dialog.getByText(companyValue)).toBeVisible();
+      await expect(dialog.getByText(titleValue)).toBeVisible();
+      await expect(dialog.getByText(locationValue)).toBeVisible();
+      await expect(dialog.getByText(jobPostingUrlValue)).toBeVisible();
+      await expect(dialog.getByText(jobPostingTextValue)).toBeVisible();
+      await expect(dialog.getByText(notesValue)).toBeVisible();
+      await expect(dialog.getByText(contactPersonValue)).toBeVisible();
+      await expect(dialog.getByText(resumeUrlValue)).toBeVisible();
+      await expect(dialog.getByText(coverletterUrlValue)).toBeVisible();
+      await expect(dialog.getByText(formattedDateAppliedValue)).toBeVisible();
+    });
   });
 
-  test("should edit a job by clicking the card", async ({ page }) => {
-    // Use unique company name to avoid conflicts with parallel tests
-    const uniqueCompany = `Edit Test Co ${Date.now()}`;
+  test("edits a job and saves changes", async ({ page }) => {
+    const companyValue = `Edit Test Co ${Date.now()}`;
+    const updatedCompanyValue = `${companyValue} Updated`;
+    const titleValue = "Senior Developer";
 
-    // First, create a job to edit
-    await page.getByRole("button", { name: "Add job to Wishlist" }).click();
-    await page.getByLabel(/company/i).fill(uniqueCompany);
-    await page.getByLabel(/title/i).fill("Test Position");
-    await page.getByRole("button", { name: /add job/i }).click();
+    // Arrange
+    await test.step("create a new job", async () => {
+      await page.getByRole("button", { name: "Add job to Wishlist" }).click();
 
-    // Wait for modal to close
-    await expect(page.getByRole("dialog")).not.toBeVisible();
+      await expect(page.getByRole("dialog")).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: "New Job" })
+      ).toBeVisible();
+      await page.getByLabel(/company/i).fill(companyValue);
+      await page.getByLabel(/title/i).fill(titleValue);
 
-    // Click on the job card (stationary click, not drag)
-    await page.getByText(uniqueCompany).click();
+      await page.getByRole("button", { name: "Add Job" }).click();
+      await expect(page.getByRole("dialog")).not.toBeVisible();
+    });
 
-    // Verify modal opens in view mode
-    await expect(page.getByRole("dialog")).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: `${uniqueCompany} - Test Position` })
-    ).toBeVisible();
+    // Act
+    await test.step("reopen job in edit mode", async () => {
+      await page.getByText(companyValue).click();
 
-    // Click edit button to enter edit mode
-    await page.getByRole("button", { name: "Edit job" }).click();
+      await expect(page.getByRole("dialog")).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: `${companyValue} - ${titleValue}` })
+      ).toBeVisible();
 
-    // Verify edit modal shows with existing data
-    await expect(page.getByRole("heading", { name: "Edit Job" })).toBeVisible();
-    await expect(page.getByLabel(/company/i)).toHaveValue(uniqueCompany);
-    await expect(page.getByLabel(/title/i)).toHaveValue("Test Position");
+      await page.getByRole("button", { name: "Edit job" }).click();
 
-    // Edit the company name
-    const updatedName = `${uniqueCompany} Updated`;
-    await page.getByLabel(/company/i).fill(updatedName);
+      await expect(
+        page.getByRole("heading", { name: "Edit Job" })
+      ).toBeVisible();
+      await expect(page.getByLabel(/company/i)).toHaveValue(companyValue);
+      await expect(page.getByLabel(/title/i)).toHaveValue(titleValue);
+    });
 
-    // Save changes
-    await page.getByRole("button", { name: /update job|save/i }).click();
+    await test.step("make edit and save changes", async () => {
+      await page.getByLabel(/company/i).fill(updatedCompanyValue);
 
-    // Verify modal closes and changes are reflected
-    await expect(page.getByRole("dialog")).not.toBeVisible();
-    await expect(page.getByText(updatedName)).toBeVisible();
-    await expect(
-      page.getByText(uniqueCompany, { exact: true })
-    ).not.toBeVisible();
+      await page.getByRole("button", { name: "Update Job" }).click();
+      await expect(page.getByRole("dialog")).not.toBeVisible();
+    });
+
+    // Assert
+    await test.step("verify changes are reflected on the board", async () => {
+      await expect(page.getByText(updatedCompanyValue)).toBeVisible();
+      await expect(
+        page.getByText(companyValue, { exact: true })
+      ).not.toBeVisible();
+    });
   });
 
-  test("should move job between columns via drag and drop", async ({
-    page,
-  }) => {
-    // Use unique company name to avoid conflicts with parallel tests
-    const uniqueCompany = `Drag Test ${Date.now()}`;
-    const testDate = "2025-12-20";
+  test("moves a job between columns via drag and drop", async ({ page }) => {
+    const companyValue = `Drag Test ${Date.now()}`;
+    const titleValue = "Test Role";
 
-    // First, create a job in Wishlist with a date
-    await page.getByRole("button", { name: "Add job to Wishlist" }).click();
-    await page.getByLabel(/company/i).fill(uniqueCompany);
-    await page.getByLabel(/title/i).fill("Test Role");
-    await page.getByLabel(/date applied/i).fill(testDate);
+    // Arrange
+    await test.step("create a new job in wishlist", async () => {
+      await page.getByRole("button", { name: "Add job to Wishlist" }).click();
+      await page.getByLabel(/company/i).fill(companyValue);
+      await page.getByLabel(/title/i).fill(titleValue);
 
-    // Open status combobox and select Wishlist
-    await page.getByLabel(/status/i).click();
-    await page.getByRole("option", { name: "Wishlist" }).click();
+      await page.getByRole("button", { name: "Add Job" }).click();
+      await expect(page.getByRole("dialog")).not.toBeVisible();
+    });
 
-    await page.getByRole("button", { name: /add job/i }).click();
-    await expect(page.getByRole("dialog")).not.toBeVisible();
+    // Act
+    await test.step("drag the card to applied", async () => {
+      const wishlistColumn = page.getByTestId("column-WISHLIST");
+      const appliedColumn = page.getByTestId("column-APPLIED");
 
-    // Locate columns by test ID
-    const wishlistColumn = page.getByTestId("column-WISHLIST");
-    const appliedColumn = page.getByTestId("column-APPLIED");
+      const jobCard = wishlistColumn.getByText(companyValue).locator("..");
 
-    // Find the job card in Wishlist
-    const jobCard = wishlistColumn.getByText(uniqueCompany).locator("..");
+      // Perform drag and drop with proper pointer events for dnd-kit
+      const source = await jobCard.boundingBox();
+      const target = await appliedColumn.boundingBox();
 
-    // Perform drag and drop with proper pointer events for dnd-kit
-    const source = await jobCard.boundingBox();
-    const target = await appliedColumn.boundingBox();
+      if (source && target) {
+        // Move to source, press, move significantly (>1px to trigger drag), release
+        await page.mouse.move(
+          source.x + source.width / 2,
+          source.y + source.height / 2
+        );
+        await page.mouse.down();
+        // Add a small delay to ensure pointer down is registered
+        await page.waitForTimeout(100);
+        // Move to target (this should trigger drag with >1px movement)
+        await page.mouse.move(
+          target.x + target.width / 2,
+          target.y + target.height / 2,
+          { steps: 20 }
+        );
+        await page.mouse.up();
+        // Wait for the drop operation to complete and UI to update
+        await page.waitForTimeout(500);
+      }
+    });
 
-    if (source && target) {
-      // Move to source, press, move significantly (>2px to trigger drag), release
-      await page.mouse.move(
-        source.x + source.width / 2,
-        source.y + source.height / 2
-      );
-      await page.mouse.down();
-      // Add a small delay to ensure pointer down is registered
-      await page.waitForTimeout(100);
-      // Move to target (this should trigger drag with >2px movement)
-      await page.mouse.move(
-        target.x + target.width / 2,
-        target.y + target.height / 2,
-        { steps: 20 }
-      );
-      await page.mouse.up();
-      // Wait for the drop operation to complete and UI to update
-      await page.waitForTimeout(500);
-    }
+    // Assert
+    await test.step("verify card has been moved correctly", async () => {
+      const wishlistAfter = page.getByTestId("column-WISHLIST");
+      const appliedAfter = page.getByTestId("column-APPLIED");
 
-    // Re-locate columns after drag (DOM may have updated)
-    const wishlistAfter = page.getByTestId("column-WISHLIST");
-    const appliedAfter = page.getByTestId("column-APPLIED");
-
-    // Verify the job moved to Applied column
-    await expect(
-      appliedAfter.getByText(uniqueCompany, { exact: true })
-    ).toBeVisible();
-
-    // Verify it's no longer in Wishlist column
-    await expect(
-      wishlistAfter.getByText(uniqueCompany, { exact: true })
-    ).not.toBeVisible();
-
-    // Verify the date was preserved after drag and drop
-    await page.getByText(uniqueCompany).click();
-    await expect(page.getByRole("dialog")).toBeVisible();
-
-    // Click edit button to enter edit mode and check date field
-    await page.getByRole("button", { name: "Edit job" }).click();
-    await expect(page.getByLabel(/date applied/i)).toHaveValue(testDate);
-    await page.getByRole("button", { name: /cancel/i }).click();
+      await expect(
+        appliedAfter.getByText(companyValue, { exact: true })
+      ).toBeVisible();
+      await expect(
+        wishlistAfter.getByText(companyValue, { exact: true })
+      ).not.toBeVisible();
+    });
   });
 
-  test("should delete a job", async ({ page }) => {
-    const uniqueCompany = `Delete Test ${Date.now()}`;
+  test("deletes a job successfully", async ({ page }) => {
+    const companyValue = `Delete Test ${Date.now()}`;
 
-    // Create a job to delete
-    await page.getByRole("button", { name: "Add job to Wishlist" }).click();
-    await page.getByLabel(/company/i).fill(uniqueCompany);
-    await page.getByLabel(/title/i).fill("Temporary Position");
-    await page.getByRole("button", { name: /add job/i }).click();
-    await expect(page.getByRole("dialog")).not.toBeVisible();
+    // Arrange
+    await test.step("create a new job in wishlist", async () => {
+      await page.getByRole("button", { name: "Add job to Wishlist" }).click();
+      await page.getByLabel(/company/i).fill(companyValue);
 
-    // Verify job appears on board
-    await expect(page.getByText(uniqueCompany)).toBeVisible();
+      await page.getByRole("button", { name: "Add Job" }).click();
+      await expect(page.getByRole("dialog")).not.toBeVisible();
+      await expect(page.getByText(companyValue)).toBeVisible();
+    });
 
     // Set up dialog handler to accept the confirm dialog
     page.once("dialog", (dialog) => {
       expect(dialog.type()).toBe("confirm");
-      expect(dialog.message()).toContain(uniqueCompany);
+      expect(dialog.message()).toContain(companyValue);
       dialog.accept();
     });
 
-    // Open modal (view mode) and switch to edit mode to access delete button
-    await page.getByText(uniqueCompany).click();
-    await expect(page.getByRole("dialog")).toBeVisible();
+    // Act
+    await test.step("open modal and delete the job", async () => {
+      await page.getByText(companyValue).click();
+      await expect(page.getByRole("dialog")).toBeVisible();
 
-    // Click edit button to enter edit mode where delete button is available
-    await page.getByRole("button", { name: "Edit job" }).click();
-    await page.getByRole("button", { name: /delete/i }).click();
+      await page.getByRole("button", { name: "Edit job" }).click();
+      await page.getByRole("button", { name: "Delete" }).click();
+    });
 
-    // Verify modal closes and job is removed
-    await expect(page.getByRole("dialog")).not.toBeVisible();
-    await expect(page.getByText(uniqueCompany)).not.toBeVisible();
+    // Assert
+    await test.step("verify modal closes and job is no longer visible on board", async () => {
+      await expect(page.getByRole("dialog")).not.toBeVisible();
+      await expect(page.getByText(companyValue)).not.toBeVisible();
+    });
   });
 });
