@@ -16,7 +16,7 @@ import { BoardView } from "@/components/board-view";
 import { JobModal } from "@/components/job-modal";
 import { JobCard } from "@/components/job-card";
 import { toast } from "sonner";
-import { useHotkey } from "@/lib/useHotkey";
+import { useHotkey } from "@/lib/hooks/useHotkey";
 import type { ExtractedJobData } from "@/lib/schemas";
 
 interface JobBoardProps {

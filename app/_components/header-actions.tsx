@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { HotkeyHint } from "@/components/ui/hotkey-hint";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ExportImportModal } from "@/components/export-import-modal";
-import { useHotkey } from "@/lib/useHotkey";
+import { useHotkey } from "@/lib/hooks/useHotkey";
 
 /**
  * Header actions component containing theme toggle, export/import, and user button.

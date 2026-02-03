@@ -128,3 +128,11 @@
   - Removed unnecessary wrapper divs
   - All unit tests passing (202 tests)
 
+20260203 15:02:30 - Ad-hoc refactor via freeform chat
+  Moved useHotkey hook to lib/hooks/ directory
+  - Created lib/hooks/ directory for organizing custom hooks
+  - Moved lib/useHotkey.ts → lib/hooks/useHotkey.ts
+  - Moved lib/useHotkey.test.ts → lib/hooks/useHotkey.test.ts
+  - Updated imports in theme-toggle.tsx, job-board.tsx, header-actions.tsx
+  - All unit tests passing (202 tests)
+
