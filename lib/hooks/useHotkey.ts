@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 
 /**
  * Configuration for a hotkey
@@ -43,11 +43,16 @@ function isInputFocused(): boolean {
 /**
  * A hook for registering global keyboard hotkeys
  *
+ * Uses the "latest ref" pattern to avoid stale closures and unnecessary
+ * re-registration of event listeners. Consumers don't need to wrap their
+ * callbacks in useCallback.
+ *
  * Features:
  * - Registers keydown listener on mount
  * - Cleans up listener on unmount
  * - Ignores events when focus is in input/textarea/contenteditable
  * - Case-insensitive key matching
+ * - No useCallback needed for onPress callback
  *
  * @example
  * ```tsx
@@ -62,11 +67,18 @@ export function useHotkey({
   onPress,
   enabled = true,
 }: HotkeyConfig): void {
-  const handleKeyDown = useCallback(
-    (event: KeyboardEvent) => {
-      // Skip if hotkey is disabled
-      if (!enabled) return;
+  // Store callback in a ref to avoid stale closures and unnecessary effect re-runs
+  const onPressRef = useRef(onPress);
 
+  // Update ref on every render (useLayoutEffect ensures it's updated before any events fire)
+  useLayoutEffect(() => {
+    onPressRef.current = onPress;
+  });
+
+  useEffect(() => {
+    if (!enabled) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
       // Skip if user is typing in an input field
       if (isInputFocused()) return;
 
@@ -76,19 +88,14 @@ export function useHotkey({
       // Case-insensitive comparison
       if (event.key.toLowerCase() === key.toLowerCase()) {
         event.preventDefault();
-        onPress();
+        onPressRef.current();
       }
-    },
-    [key, onPress, enabled]
-  );
-
-  useEffect(() => {
-    if (!enabled) return;
+    };
 
     document.addEventListener("keydown", handleKeyDown);
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [handleKeyDown, enabled]);
+  }, [key, enabled]); // onPress intentionally omitted - read from ref instead
 }

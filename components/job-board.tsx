@@ -64,15 +64,11 @@ export function JobBoard({ jobs: initialJobs }: JobBoardProps) {
     setIsModalOpen(true);
   }, []);
 
-  // Handler specifically for the 'a' hotkey - adds to wishlist
-  const handleAddToWishlist = useCallback(() => {
-    handleNewJob("WISHLIST");
-  }, [handleNewJob]);
-
   // Register 'a' hotkey for adding job to wishlist
+  // No useCallback needed - useHotkey uses the latest ref pattern
   useHotkey({
     key: "a",
-    onPress: handleAddToWishlist,
+    onPress: () => handleNewJob("WISHLIST"),
   });
 
   function handleJobClick(job: Job) {

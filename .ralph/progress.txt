@@ -136,3 +136,13 @@
   - Updated imports in theme-toggle.tsx, job-board.tsx, header-actions.tsx
   - All unit tests passing (202 tests)
 
+20260203 15:27:45 - Ad-hoc improvement via freeform chat
+  Refactored useHotkey to use "latest ref" pattern
+  - Stores onPress callback in a ref, updated via useLayoutEffect
+  - Event listener now only re-registers when key or enabled changes
+  - Consumers no longer need to wrap callbacks in useCallback
+  - Removed handleAddToWishlist useCallback from job-board.tsx (now inlined)
+  - Fixes subtle bug where listener was re-added on every render
+  - All unit tests passing (202 tests)
+  - References: https://www.epicreact.dev/the-latest-ref-pattern-in-react
+
