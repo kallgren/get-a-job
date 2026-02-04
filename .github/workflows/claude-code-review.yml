@@ -1,0 +1,132 @@
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+
+# Prevent multiple runs on rapid pushes
+concurrency:
+  group: claude-review-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    # Skip draft PRs and dependabot
+    if: |
+      github.event.pull_request.draft == false &&
+      !contains(github.event.pull_request.labels.*.name, 'skip-review') &&
+      github.event.pull_request.user.login != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write # To push commits
+      pull-requests: write # To comment on PR
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0 # Full history for better context
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Get changed files
+        id: changed
+        run: |
+          FILES=$(gh pr view ${{ github.event.pull_request.number }} --json files -q '.files[].path' | tr '\n' ' ')
+          echo "files=$FILES" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Prepare review prompt
+        run: |
+          # Read the prompt template and substitute variables
+          sed -e "s|\${PR_TITLE}|${{ github.event.pull_request.title }}|g" \
+              -e "s|\${PR_BODY}|${{ github.event.pull_request.body }}|g" \
+              -e "s|\${CHANGED_FILES}|${{ steps.changed.outputs.files }}|g" \
+              .github/prompts/code-review.md > /tmp/review-prompt.md
+
+      - name: Run Claude Code Review
+        id: review
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          # Run Claude Code in non-interactive mode
+          claude --print /tmp/review-prompt.md > /tmp/claude-output.log 2>&1 || true
+
+          # Check if review was generated
+          if [ -f /tmp/review-output.md ]; then
+            echo "review_generated=true" >> $GITHUB_OUTPUT
+          else
+            echo "review_generated=false" >> $GITHUB_OUTPUT
+            echo "Claude Code did not generate a review file" > /tmp/review-output.md
+          fi
+
+      - name: Commit fixes (if any)
+        run: |
+          git config user.name "claude-code-review[bot]"
+          git config user.email "claude-code-review[bot]@users.noreply.github.com"
+
+          if [ -n "$(git status --porcelain)" ]; then
+            git add -A
+            git commit -m "fix: automated code review fixes
+
+          Applied by Claude Code Review action.
+
+          Co-Authored-By: Claude <noreply@anthropic.com>"
+            git push
+            echo "" >> /tmp/review-output.md
+            echo "---" >> /tmp/review-output.md
+            echo "### Automated Fixes Applied" >> /tmp/review-output.md
+            echo "" >> /tmp/review-output.md
+            echo "Some issues were automatically fixed in this PR." >> /tmp/review-output.md
+          fi
+
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const review = fs.readFileSync('/tmp/review-output.md', 'utf8');
+
+            // Find existing bot comment to update (avoid spam)
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(c =>
+              c.user.login === 'github-actions[bot]' &&
+              c.body.includes('<!-- claude-code-review -->')
+            );
+
+            const body = '<!-- claude-code-review -->\n' +
+              '## Claude Code Review\n\n' +
+              review + '\n\n' +
+              '---\n' +
+              '<sub>Reviewed at commit ${{ github.event.pull_request.head.sha }}</sub>';
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body
+              });
+            }
