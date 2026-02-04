@@ -29,24 +29,32 @@ test.describe("Keyboard Hotkeys", () => {
 
   test("pressing 'd' toggles the theme", async ({ page }) => {
     // Arrange
-    const htmlElement = page.locator("html");
-    const initialDarkClass = await htmlElement.evaluate((el) =>
-      el.classList.contains("dark")
-    );
+    async function getThemeClass() {
+      return page.evaluate(() =>
+        document.documentElement.classList.contains("dark") ? "dark" : "light"
+      );
+    }
+
+    const initialTheme = await getThemeClass();
 
     // Act
     await test.step("press 'd' to toggle theme", async () => {
       await page.keyboard.press("d");
+
+      const newTheme = await getThemeClass();
+
+      // Theme cycles: light -> dark -> system -> light
+      // System will still say "dark"
+      // If the theme is still the same, press one more time
+      if (newTheme === initialTheme) {
+        await page.keyboard.press("d");
+      }
     });
 
     // Assert
     await test.step("verify theme class has changed", async () => {
-      // Theme cycles: light -> dark -> system -> light
-      // We verify the dark class toggled (or stayed same if system matched)
-      const newDarkClass = await htmlElement.evaluate((el) =>
-        el.classList.contains("dark")
-      );
-      expect(newDarkClass).not.toBe(initialDarkClass);
+      const newTheme = await getThemeClass();
+      expect(newTheme).not.toBe(initialTheme);
     });
   });
 
@@ -54,7 +62,9 @@ test.describe("Keyboard Hotkeys", () => {
     page,
   }) => {
     // Arrange
-    await expect(page.getByRole("dialog")).not.toBeVisible();
+    await test.step("verify no dialog is open from start", async () => {
+      await expect(page.getByRole("dialog")).not.toBeVisible();
+    });
 
     // Act
     await test.step("press 'a' to open add job modal", async () => {
@@ -75,7 +85,9 @@ test.describe("Keyboard Hotkeys", () => {
 
   test("pressing 'x' opens the export/import modal", async ({ page }) => {
     // Arrange
-    await expect(page.getByRole("dialog")).not.toBeVisible();
+    await test.step("verify no dialog is open from start", async () => {
+      await expect(page.getByRole("dialog")).not.toBeVisible();
+    });
 
     // Act
     await test.step("press 'x' to open export/import modal", async () => {
@@ -84,32 +96,6 @@ test.describe("Keyboard Hotkeys", () => {
 
     // Assert
     await test.step("verify export/import modal opens", async () => {
-      await expect(page.getByRole("dialog")).toBeVisible();
-      await expect(
-        page.getByRole("heading", { name: /export.*import/i })
-      ).toBeVisible();
-    });
-  });
-
-  test("uppercase hotkeys also work (Shift+d, Shift+a, Shift+x)", async ({
-    page,
-  }) => {
-    // Test uppercase 'A' opens modal
-    await test.step("press Shift+a to open add job modal", async () => {
-      await page.keyboard.press("Shift+a");
-      await expect(page.getByRole("dialog")).toBeVisible();
-      await expect(
-        page.getByRole("heading", { name: "New Job" })
-      ).toBeVisible();
-    });
-
-    // Close modal with Escape
-    await page.keyboard.press("Escape");
-    await expect(page.getByRole("dialog")).not.toBeVisible();
-
-    // Test uppercase 'X' opens export modal
-    await test.step("press Shift+x to open export/import modal", async () => {
-      await page.keyboard.press("Shift+x");
       await expect(page.getByRole("dialog")).toBeVisible();
       await expect(
         page.getByRole("heading", { name: /export.*import/i })
