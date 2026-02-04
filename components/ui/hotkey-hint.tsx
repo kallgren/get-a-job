@@ -25,7 +25,7 @@ function HotkeyHint({ hotkey, className, ...props }: HotkeyHintProps) {
         className={cn(
           "inline-flex items-center justify-center",
           "h-5 min-w-5 px-1",
-          "rounded border border-border bg-muted",
+          "rounded border border-border bg-muted border-b-3",
           "font-mono text-xs text-muted-foreground",
           "select-none",
           className
