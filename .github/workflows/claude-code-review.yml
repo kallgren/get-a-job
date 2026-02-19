@@ -17,7 +17,6 @@ jobs:
       !contains(github.event.pull_request.labels.*.name, 'skip-review') &&
       github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-latest
-
     permissions:
       contents: write # To push commits
       pull-requests: write # To comment on PR
@@ -69,6 +68,10 @@ jobs:
             echo "review_generated=false" >> $GITHUB_OUTPUT
             echo "Claude Code did not generate a review file" > /tmp/review-output.md
           fi
+
+      - name: Debug Claude output
+        if: always()
+        run: cat /tmp/claude-output.log || echo "Log file not found"
 
       - name: Commit fixes (if any)
         run: |
