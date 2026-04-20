@@ -10,7 +10,7 @@ export default async function Home() {
   const { data: jobs, error } = await getJobsByUserIdSafe(userId!);
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex h-screen flex-col bg-background">
       <header className="border-b border-border bg-card shadow-sm">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
@@ -27,7 +27,7 @@ export default async function Home() {
           <HeaderActions />
         </div>
       </header>
-      <main className="flex flex-1 flex-col pt-2">
+      <main className="flex min-h-0 flex-1 flex-col pt-2">
         {error ? (
           <div className="flex flex-1 items-center justify-center">
             <p className="text-destructive">

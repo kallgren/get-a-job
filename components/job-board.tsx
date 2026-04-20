@@ -182,7 +182,7 @@ export function JobBoard({ jobs: initialJobs }: JobBoardProps) {
   );
 
   return (
-    <div className="flex flex-1">
+    <div className="flex min-h-0 flex-1">
       {isMounted ? (
         <DndContext
           sensors={sensors}
