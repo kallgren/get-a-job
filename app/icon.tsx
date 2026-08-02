@@ -1,44 +1,26 @@
-import { ImageResponse } from "next/og";
+import { renderAppIcon } from "@/lib/app-icon";
 
-// Image metadata
-export const size = {
-  width: 32,
-  height: 32,
-};
 export const contentType = "image/png";
 
-// Image generation
-export default function Icon() {
-  return new ImageResponse(
-    (
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: "#2463ef",
-        }}
-      >
-        {/* Briefcase icon SVG path from Lucide */}
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="white"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-          <rect width="20" height="14" x="2" y="6" rx="2" />
-        </svg>
-      </div>
-    ),
-    {
-      ...size,
-    }
-  );
+// 32 is the browser tab favicon; 512 is what installers (Dock, home screen)
+// want. Each entry is served at `/icon/<id>`.
+const SIZES = [
+  { id: "32", size: 32, glyph: 20 },
+  { id: "512", size: 512, glyph: 340 },
+];
+
+export function generateImageMetadata() {
+  return SIZES.map(({ id, size }) => ({
+    id,
+    size: { width: size, height: size },
+    contentType,
+  }));
+}
+
+// `id` arrives as a promise, like `params` does in Next 16.
+export default async function Icon({ id }: { id: Promise<string> }) {
+  const resolved = await id;
+  const { size, glyph } = SIZES.find((s) => s.id === resolved) ?? SIZES[0];
+
+  return renderAppIcon({ size, glyph });
 }
