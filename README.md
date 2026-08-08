@@ -1,8 +1,15 @@
-# Get a Job
+<h1>
+  <img src="docs/assets/logo.png" alt="" width="40" align="top">
+  Get a Job
+</h1>
 
 A modern job application tracking system built with Next.js, designed to help you manage your job search effectively.
 
-<video src="docs/demo.mp4" width="720" autoplay loop muted playsinline></video>
+[**Live demo**](https://get-a-job-tracker.vercel.app) (requires login)
+
+[![CI](https://github.com/kallgren/get-a-job/actions/workflows/ci.yml/badge.svg)](https://github.com/kallgren/get-a-job/actions/workflows/ci.yml)
+
+![Get a Job: a kanban board with Wishlist, Applied, Interview, Offer, Accepted and Rejected columns, each card showing the company, role, location and the date applied, and an ACCEPTED stamp across the card in the Accepted column](docs/assets/screenshot.webp)
 
 ## Tech Stack
 
@@ -111,6 +118,7 @@ E2E tests require a test user in Clerk and specific environment variables:
    - Copy the User ID (starts with `user_`)
 
 2. **Add to `.env.local`:**
+
    ```bash
    TEST_USER_EMAIL=yourname+clerk_test@example.com
    TEST_USER_PASSWORD=your_test_password
@@ -123,11 +131,13 @@ E2E tests require a test user in Clerk and specific environment variables:
    ```
 
 **How it works:**
+
 - First run: Playwright authenticates once and saves session to `playwright/.auth/user.json`
 - Subsequent runs: Tests reuse saved auth state (much faster!)
 - Each test: Database is cleaned before running to ensure isolation
 
 **Troubleshooting:**
+
 - If tests fail with auth errors, delete `playwright/.auth/user.json` and re-run
 - Auth state expires after some time - regenerate by re-running tests
 - Tests automatically run setup before chromium tests (no manual setup needed)
@@ -181,6 +191,7 @@ This app is deployed using GitHub Actions for CI/CD and Vercel for hosting.
    - Copy the User ID (starts with `user_`)
 
 **Note on Vercel URL:** You won't know your exact production URL until after deploying to Vercel. Two options:
+
 - **Option A (Recommended):** Start Vercel setup (step 4 below) to preview the URL before deploying, then configure Clerk
 - **Option B (Easier):** Use wildcard `https://*.vercel.app` initially, deploy to Vercel, then add the specific production URL to Clerk afterward
 
@@ -229,6 +240,7 @@ DATABASE_URL="postgresql://user:pass@ep-xxx.region.aws.neon.tech/dbname?sslmode=
 ### Continuous Deployment
 
 **Workflow:**
+
 1. Create feature branch and make changes
 2. Run `npm run validate` locally
 3. Commit and push to GitHub
@@ -239,6 +251,7 @@ DATABASE_URL="postgresql://user:pass@ep-xxx.region.aws.neon.tech/dbname?sslmode=
 8. Vercel automatically deploys to production
 
 **CI/CD Pipeline:**
+
 - Type checking with TypeScript
 - ESLint code quality checks
 - Unit tests (Vitest)
@@ -260,21 +273,25 @@ DATABASE_URL="<your-neon-url>" npm run deploy:migrate
 ### Troubleshooting
 
 **Build fails on Vercel:**
+
 - Check environment variables are set correctly
 - Verify `npm run build` works locally with production env vars
 - Check Vercel logs in Dashboard → Deployments → [deployment] → Building
 
 **E2E tests fail in GitHub Actions:**
+
 - Verify all 5 GitHub Secrets are set correctly
 - Ensure test user exists in Clerk production instance
 - Check test user ID matches Clerk Dashboard
 
 **Authentication fails in production:**
+
 - Verify Clerk allowed domains include your Vercel domain
 - Ensure environment variables use production Clerk keys (`pk_live_*`, not `pk_test_*`)
 - Add wildcard domain for previews: `https://*.vercel.app`
 
 **Database connection errors:**
+
 - Use Neon's **pooled connection string** (not direct)
 - Ensure connection string includes `?sslmode=require`
 - Check Neon project is active (free tier auto-suspends after inactivity)
