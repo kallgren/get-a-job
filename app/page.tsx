@@ -20,7 +20,7 @@ export default async function Home() {
             <div>
               <h1 className="text-xl font-semibold">Get a Job</h1>
               <p className="text-sm text-muted-foreground">
-                Simple Kanban for your job search
+                Simple kanban board for your job search
               </p>
             </div>
           </div>

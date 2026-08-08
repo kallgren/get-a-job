@@ -21,7 +21,7 @@ A modern job application tracking system built with Next.js, designed to help yo
 
 - **AI-Powered Job Extraction:** Paste any job listing URL (cmd+v/ctrl+v) directly on the board to automatically extract company, title, location, and job description using Claude AI
 - Track job applications through different stages (Wishlist → Applied → Interview → Offer → Accepted/Rejected)
-- Kanban board and table views
+- Kanban-style board and table views
 - Dark mode support with system preference detection
 - File uploads for resumes and cover letters
 - Application history tracking

@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Get a Job",
-  description: "Simple Kanban for your job search",
+  description: "Simple kanban board for your job search",
 };
 
 // The manifest carries a single `theme_color`; these keep the window chrome

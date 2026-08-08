@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Get a Job",
     short_name: "Get a Job",
-    description: "Simple Kanban for your job search",
+    description: "Simple kanban board for your job search",
     start_url: "/",
     display: "standalone",
     // Matches the header's `bg-card` in light mode, so the window chrome
