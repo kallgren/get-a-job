@@ -1,0 +1,158 @@
+20260129 07:38:52 - HK-001 (Infrastructure) DONE
+  Created useHotkey hook in lib/useHotkey.ts
+  - Registers keydown listener on mount
+  - Cleans up listener on unmount
+  - Ignores events in input/textarea/contenteditable
+  - Case-insensitive key matching
+  - Ignores Ctrl/Meta/Alt modifiers
+
+  HK-010 (Testing) DONE
+  Created comprehensive unit tests in lib/useHotkey.test.ts (17 tests)
+  - Basic key press detection
+  - Case insensitivity
+  - Input field detection
+  - Modifier key handling
+  - Cleanup on unmount
+
+  Commit: a1a36de
+
+20260129 08:19:30 - HK-002 (Infrastructure) DONE
+  Created HotkeyHint component in components/ui/hotkey-hint.tsx
+  - Renders single character in a boxed badge style
+  - Uses monospace font (font-mono)
+  - Styled with shadcn/ui CSS variables (border, bg-muted, text-muted-foreground)
+  - Uppercase normalization for consistent display
+  - Accepts className and HTML attributes for flexibility
+
+  HK-011 (Testing) DONE
+  Created component tests in components/ui/hotkey-hint.test.tsx (7 tests)
+  - Renders correct character
+  - Uppercase normalization
+  - Screen reader text accessibility
+  - aria-hidden attribute
+  - Custom className support
+  - HTML attribute passthrough
+
+  Commit: d838dce
+
+20260129 08:21:57 - HK-003 (Feature) DONE, HK-006 (UI) DONE
+  Wired up 'd' hotkey for theme toggle in components/theme-toggle.tsx
+  - Added useHotkey hook to register 'd' key
+  - Added HotkeyHint component to display [D] alongside toggle button
+  - Wrapped button in flex container to position hint next to icon button
+
+  Added 4 new tests to components/theme-toggle.test.tsx (14 tests total)
+  - Test hotkey hint [D] is displayed
+  - Test 'd' key cycles theme
+  - Test 'D' (uppercase) key cycles theme
+  - Test 'd' key does nothing when input is focused
+
+20260129 08:25:31 - HK-004 (Feature) DONE, HK-007 (UI) DONE
+  Wired up 'x' hotkey for export/import modal in app/_components/header-actions.tsx
+  - Added useHotkey hook to register 'x' key
+  - Added HotkeyHint component to display [X] alongside export button
+  - Wrapped button in flex container to position hint next to icon button
+  - Extracted openExportImport handler for reuse by both click and hotkey
+
+  Created new test file app/_components/header-actions.test.tsx (6 tests)
+  - Test export/import button renders
+  - Test hotkey hint [X] is displayed
+  - Test clicking button opens modal
+  - Test 'x' key opens modal
+  - Test 'X' (uppercase) key opens modal
+  - Test 'x' key does nothing when input is focused
+
+  Commit: 0755c9f
+
+20260129 08:28:51 - HK-005 (Feature) DONE, HK-008 (UI) DONE
+  Wired up 'a' hotkey for add job to wishlist in components/job-board.tsx
+  - Added useHotkey hook to register 'a' key
+  - Created handleAddToWishlist callback that triggers handleNewJob("WISHLIST")
+  - Used useCallback for stable function references
+
+  Added HotkeyHint [A] to Wishlist column in components/board-view.tsx
+  - Imported HotkeyHint component
+  - Added hint next to the Wishlist column's add button only
+  - Wrapped button in flex container for proper positioning
+
+  Created new test file components/job-board.test.tsx (4 tests)
+  - Test board view renders
+  - Test 'a' key opens modal with WISHLIST status
+  - Test 'A' (uppercase) key opens modal with WISHLIST status
+  - Test 'a' key does nothing when input is focused
+
+  Created new test file components/board-view.test.tsx (3 tests)
+  - Test all status columns render
+  - Test hotkey hint [A] appears only on Wishlist column
+  - Test add buttons exist for all columns
+
+  Commit: 04c64f2
+
+20260129 08:31:18 - HK-009 (Accessibility) DONE
+  Fixed HotkeyHint component screen reader accessibility
+  - Problem: sr-only text was inside aria-hidden span, so screen readers couldn't access it
+  - Solution: Moved sr-only text outside the aria-hidden badge element using React fragment
+  - Screen readers now properly announce "keyboard shortcut D" (or X, A) for each hint
+
+  Updated HotkeyHint tests (8 tests total)
+  - Added test verifying sr-only text is NOT inside an aria-hidden parent
+  - Updated existing tests to select visible badge by aria-hidden attribute
+  - All tests verify the correct accessibility structure
+
+20260129 08:38:01 - HK-012 (Testing) DONE
+  Created E2E test file e2e/hotkeys.spec.ts (11 tests)
+  - Theme toggle hotkey:
+    - Test 'd' cycles theme (checks dark class on html element)
+    - Test 'D' (Shift+d) also works
+  - Add job hotkey:
+    - Test 'a' opens add job modal with Wishlist status pre-selected
+    - Test 'A' (Shift+a) also opens modal
+  - Export/import hotkey:
+    - Test 'x' opens export/import modal
+    - Test 'X' (Shift+x) also opens modal
+  - Hotkeys disabled in input fields:
+    - Test 'd' doesn't toggle theme when focused in input
+    - Test 'a' doesn't open second modal when typing in input
+    - Test 'x' doesn't open export modal when textarea is focused
+  - Hotkey hints visibility:
+    - Test D, X, A hints are visible on page
+
+20260203 14:16:42 - Ad-hoc fix via freeform chat
+  Moved HotkeyHint components inside clickable button elements
+  - Previously hints were siblings to buttons in flex containers
+  - Now hints are children of their respective buttons
+  - Files changed:
+    - components/theme-toggle.tsx: HotkeyHint now inside Button
+    - app/_components/header-actions.tsx: HotkeyHint now inside Button
+    - components/board-view.tsx: HotkeyHint now inside Button
+  - Removed unnecessary wrapper divs
+  - All unit tests passing (202 tests)
+
+20260203 15:02:30 - Ad-hoc refactor via freeform chat
+  Moved useHotkey hook to lib/hooks/ directory
+  - Created lib/hooks/ directory for organizing custom hooks
+  - Moved lib/useHotkey.ts → lib/hooks/useHotkey.ts
+  - Moved lib/useHotkey.test.ts → lib/hooks/useHotkey.test.ts
+  - Updated imports in theme-toggle.tsx, job-board.tsx, header-actions.tsx
+  - All unit tests passing (202 tests)
+
+20260203 15:27:45 - Ad-hoc improvement via freeform chat
+  Refactored useHotkey to use "latest ref" pattern
+  - Stores onPress callback in a ref, updated via useLayoutEffect
+  - Event listener now only re-registers when key or enabled changes
+  - Consumers no longer need to wrap callbacks in useCallback
+  - Removed handleAddToWishlist useCallback from job-board.tsx (now inlined)
+  - Fixes subtle bug where listener was re-added on every render
+  - All unit tests passing (202 tests)
+  - References: https://www.epicreact.dev/the-latest-ref-pattern-in-react
+
+20260203 15:42:10 - Ad-hoc refactor via freeform chat
+  Rewrote E2E hotkey tests to match job-board.spec.ts patterns
+  - Added test.step() for arrange/act/assert structure
+  - Removed waitForTimeout calls - using proper assertions instead
+  - Flattened nested test.describe blocks
+  - Consolidated uppercase tests into one test (Shift+a, Shift+x)
+  - Consolidated "disabled in input" tests into one test with steps
+  - Reduced from 11 tests to 6 while maintaining coverage
+  - Matches patterns from job-board.spec.ts
+

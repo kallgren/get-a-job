@@ -3,6 +3,8 @@
 import { Moon, Sun, Monitor } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
+import { HotkeyHint } from "@/components/ui/hotkey-hint";
+import { useHotkey } from "@/lib/hooks/useHotkey";
 import { useEffect, useState } from "react";
 
 export function ThemeToggle() {
@@ -20,6 +22,12 @@ export function ThemeToggle() {
     else if (theme === "dark") setTheme("system");
     else setTheme("light");
   };
+
+  // Register 'd' hotkey for theme toggle
+  useHotkey({
+    key: "d",
+    onPress: cycleTheme,
+  });
 
   const getIcon = () => {
     if (theme === "light") return <Sun className="h-4 w-4" />;
@@ -41,8 +49,9 @@ export function ThemeToggle() {
   // Return a placeholder button during SSR to prevent hydration mismatch
   if (!mounted) {
     return (
-      <Button variant="ghost" size="icon" aria-label="Toggle theme">
+      <Button variant="ghost" aria-label="Toggle theme">
         <Monitor className="h-4 w-4" />
+        <HotkeyHint hotkey="d" />
       </Button>
     );
   }
@@ -50,12 +59,12 @@ export function ThemeToggle() {
   return (
     <Button
       variant="ghost"
-      size="icon"
       onClick={cycleTheme}
       aria-label={getLabel()}
       title={getLabel()}
     >
       {getIcon()}
+      <HotkeyHint hotkey="d" />
     </Button>
   );
 }

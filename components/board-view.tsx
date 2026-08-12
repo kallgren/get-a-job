@@ -4,6 +4,7 @@ import { Job, JobStatus } from "@prisma/client";
 import { useDroppable } from "@dnd-kit/core";
 import { JobCard } from "@/components/job-card";
 import { Button } from "@/components/ui/button";
+import { HotkeyHint } from "@/components/ui/hotkey-hint";
 import { PlusIcon } from "lucide-react";
 import { getStatusColor } from "@/lib/utils";
 import { useEffect } from "react";
@@ -67,6 +68,7 @@ function DroppableColumn({
           aria-label={`Add job to ${status.label}`}
         >
           <PlusIcon className="size-4" />
+          {status.value === "WISHLIST" && <HotkeyHint hotkey="a" />}
         </Button>
       </div>
       <div className="flex-1 space-y-2 px-4 pb-4 transition-colors">
