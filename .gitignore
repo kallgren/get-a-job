@@ -28,7 +28,6 @@
 # misc
 .DS_Store
 *.pem
-CLAUDE.md
 ai-docs/
 
 # debug
